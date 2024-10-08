@@ -1,2 +1,2 @@
-def hello() -> str:
-    return "Hello from textual-englyph!"
+from .englyph import EnGlyph
+
