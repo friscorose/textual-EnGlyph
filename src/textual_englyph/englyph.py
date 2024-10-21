@@ -13,7 +13,8 @@ class EnGlyph( Widget, inherit_bindings=False ):
     def __init__( self,
                  phrase: RenderableType = "",
                  *,
-                 basis: str|None = "octant_full",
+                 basis = (2,4),
+                 pips = False,
                  name: str | None = None,
                  id: str | None = None,
                  classes: str | None = None,
@@ -21,7 +22,8 @@ class EnGlyph( Widget, inherit_bindings=False ):
                  ) -> None:
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
         self.phrase = str( phrase )
-        self.basis = (2,4)
+        self.basis = basis
+        self.pips = pips
         self._strips_cache = None
         self.update()
 
@@ -32,14 +34,12 @@ class EnGlyph( Widget, inherit_bindings=False ):
         """New display input"""
         self.phrase = phrase or self.phrase
         self.basis = basis or self.basis
-        self._strips_cache = ToGlyxels.from_string( self.phrase, self.basis )
+        self._strips_cache = ToGlyxels.from_string( self.phrase, self.basis, self.pips )
         self.refresh(layout=True)
 
     def render_line( self, row:int ) -> Strip:
         strip = Strip.blank(0)
         if self._strips_cache is not None and row < len( self._strips_cache ):
             strip = self._strips_cache[row]
-            #strip = Strip( [Segment(str(len(self._strips_cache)))] )
-            #strip = Strip( [Segment(str(row))] )
         return strip
 

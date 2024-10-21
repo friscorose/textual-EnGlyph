@@ -4,7 +4,7 @@ from textual.app import App, ComposeResult
 class Test(App):
 
     def compose(self) -> ComposeResult:
-        yield EnGlyph("Hello!")
+        yield EnGlyph("Hello Textual!")
 
 if __name__ == "__main__":
     Test().run()
