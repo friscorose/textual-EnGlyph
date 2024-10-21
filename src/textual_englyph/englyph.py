@@ -30,10 +30,11 @@ class EnGlyph( Widget, inherit_bindings=False ):
     def on_click( self ) -> None:
         self.update( "It's George" )
 
-    def update( self, phrase: str|None = None, basis: str|None = None ) -> None:
+    def update( self, phrase: str|None = None, basis: str|None = None, pips: bool|None = None ) -> None:
         """New display input"""
         self.phrase = phrase or self.phrase
         self.basis = basis or self.basis
+        self.pips = pips or self.pips
         self._strips_cache = ToGlyxels.from_string( self.phrase, self.basis, self.pips )
         self.refresh(layout=True)
 
