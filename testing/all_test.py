@@ -19,15 +19,15 @@ class Test(App):
         this_basis = self.basis_list.pop(0)
         self.basis_list.append( this_basis )
 
-        self.test_widget.update( phrase=self.phrase_list[0], basis=this_basis, pips=self.use_pips )
+        self.test_widget.update( renderable=self.phrase_list[0], basis=this_basis, pips=self.use_pips )
         self.set_timer(1, self.rerender)
 
     def rerender(self):
-        self.test_widget.update( phrase=self.phrase_list[1], basis=self.basis_list[-1], pips=self.use_pips )
+        self.test_widget.update( renderable=self.phrase_list[1], basis=self.basis_list[-1], pips=self.use_pips )
         if self.basis_list[-1] == (1,1):
             self.use_pips = not self.use_pips
             if not self.use_pips: 
-                self.test_widget.update( phrase="GoodBye!", basis=self.basis_list[-1], pips=self.use_pips )
+                self.test_widget.update( renderable="GoodBye!", basis=self.basis_list[-1], pips=self.use_pips )
                 self.set_timer(1, self.app.exit)
 
 
