@@ -49,9 +49,15 @@ class ToGlyxels():
         #place bitmap into upper left corner
         slate.paste( selection, (0,0) )
 
+        base_row = int( y/basis[1] - 1 )
+        mid_row = int( base_row/2 )
+        cap_row = 0
+        
         strips = []
         for y_glyph in range( 0, y, basis[1] ):
             y_strip = []
+            y_row = int( y_glyph/basis[1] )
+            y_style = ToGlyxels._y_Style( style, cap_row, mid_row, base_row, y_row)
             for x_glyph in range( 0, x, basis[0] ):
                 glyph_idx = 0
                 glyxelList = []
@@ -62,16 +68,31 @@ class ToGlyxels():
                     if gColor > 0:
                         glyph_idx += 2**exp
                 glyph = glut[basis[0]][basis[1]][glyph_idx]
-                y_strip.append( Segment( glyph, style ) )
+                y_strip.append( Segment( glyph, y_style ) )
             strips.append( Strip(y_strip) )
         return strips
+
+    @staticmethod
+    def _y_Style( style, cap_row, mid_row, base_row, y_row):
+        if style:
+            if style.overline and y_row != cap_row:
+                style = style + Style(overline=False)
+            if style.strike and y_row != mid_row:
+                style = style + Style(strike=False)
+            if y_row != base_row:
+                if style.underline:
+                    style = style + Style(underline=False)
+                if style.underline2:
+                    style = style + Style(underline2=False)
+        return style
+
 
     @staticmethod
     def _chunk_join( strips, chunk ):
         if len( strips ) == 0: return chunk
         joint = []
         for idx, line in enumerate( strips ):
-            joint.append(Strip.join( (line,chunk[idx]) ))
+            joint.append(Strip.join( (line,chunk[idx]) ).simplify())
         return joint
 
     @staticmethod
