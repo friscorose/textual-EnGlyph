@@ -6,6 +6,7 @@ class Test(App):
     EnGlyph {
         height: 4;
         color: green;
+        text-style: underline;
         }
     """
 

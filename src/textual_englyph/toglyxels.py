@@ -73,6 +73,18 @@ class ToGlyxels():
         return strips
 
     @staticmethod
+    def style_strips( strips, style):
+        base_row = len( strips )
+        mid_row = int( base_row/2 )
+        cap_row = 0
+        new_strips = []
+        for y_row, y_strip in enumerate( strips ):
+            y_style = ToGlyxels._y_Style( style, cap_row, mid_row, base_row, y_row)
+            new_strips.append( y_strip.apply_style( y_style ) )
+        return new_strips
+
+            
+    @staticmethod
     def _y_Style( style, cap_row, mid_row, base_row, y_row):
         if style:
             if style.overline and y_row != cap_row:

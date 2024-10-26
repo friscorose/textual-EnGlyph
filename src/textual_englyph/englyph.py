@@ -26,7 +26,6 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self.basis = basis
         self.pips = pips
         self._strips_cache = None
-        self.update()
 
     def _enRich_string(self, renderable: RenderableType, markup: bool=True) -> RenderableType:
         if isinstance(renderable, str):
@@ -41,13 +40,14 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self.renderable = renderable or self.renderable
         self.basis = basis or self.basis
         self.pips = pips or self.pips
-        self._strips_cache = ToGlyxels.from_renderable( self.renderable, self.basis, self.pips )
         self.refresh(layout=True)
 
     def render_line( self, row:int ) -> Strip:
         strip = Strip.blank(0)
+        if row == 0:
+            self.renderable.stylize_before( self.rich_style )
+            self._strips_cache = ToGlyxels.from_renderable( self.renderable, self.basis, self.pips )
         if self._strips_cache is not None and row < len( self._strips_cache ):
             strip = self._strips_cache[row]
-            strip = strip.apply_style( self.rich_style )
         return strip
 
