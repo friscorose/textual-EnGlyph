@@ -37,7 +37,7 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self._encache()
         self._renderable = None
 
-    def get_content_width(self, a, b):
+    def get_content_width(self, a=None, b=None):
         return self._strips_cache[0].cell_length
 
     def get_content_height(self, a=None, b=None, c=None):
