@@ -116,7 +116,7 @@ class ToGlyxels():
             font_name: str = "TerminusTTF-4.46.0.ttf"
             ) -> List[List[Segment]]:
         strips = []
-        con_strips = Console().render_lines( phrase )
+        con_strips = Console().render_lines( phrase, pad=False )
         for a_strip in con_strips:
             for seg in a_strip:
                 pane = ToGlyxels._font_pane( seg.text, font_name, font_size )

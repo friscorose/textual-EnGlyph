@@ -8,11 +8,14 @@ from rich.console import RenderableType
 from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
+from rich.traceback import install
+install()
 
 class EnGlyph( Widget, inherit_bindings=False ):
     DEFAULT_CSS = """
     EnGlyph {
         height: auto;
+        width: auto;
     }
     """
 
@@ -32,6 +35,9 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self.basis = basis
         self.pips = pips
         self._strips_cache = ToGlyxels.from_renderable( self.renderable, self.basis, self.pips )
+
+    def get_content_width(self, a, b):
+        return self._strips_cache[0].cell_length
 
     def get_content_height(self, a, b, c):
         return len( self._strips_cache )
@@ -58,5 +64,6 @@ class EnGlyph( Widget, inherit_bindings=False ):
             self._strips_cache = ToGlyxels.from_renderable( self.renderable, self.basis, self.pips )
         if self._strips_cache is not None and row < len( self._strips_cache ):
             strip = self._strips_cache[row]
+
         return strip
 
