@@ -10,6 +10,12 @@ from rich.style import Style
 from rich.text import Text
 
 class EnGlyph( Widget, inherit_bindings=False ):
+    DEFAULT_CSS = """
+    EnGlyph {
+        height: auto;
+    }
+    """
+
     def __init__( self,
                  renderable: RenderableType = "",
                  *,
@@ -25,7 +31,10 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self.renderable = self._enRich_string( renderable, markup )
         self.basis = basis
         self.pips = pips
-        self._strips_cache = None
+        self._strips_cache = ToGlyxels.from_renderable( self.renderable, self.basis, self.pips )
+
+    def get_content_height(self, a, b, c):
+        return len( self._strips_cache )
 
     def _enRich_string(self, renderable: RenderableType, markup: bool=True) -> RenderableType:
         if isinstance(renderable, str):
