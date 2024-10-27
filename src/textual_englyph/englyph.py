@@ -31,39 +31,43 @@ class EnGlyph( Widget, inherit_bindings=False ):
                  disabled: bool = False,
                  ) -> None:
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
-        self.renderable = self._enRich_string( renderable, markup )
+        self.markup = markup
         self.basis = basis
         self.pips = pips
-        self._strips_cache = ToGlyxels.from_renderable( self.renderable, self.basis, self.pips )
+        self._engender( renderable )
+        #self.rich_style is not settled yet, trigger regenerate _strip_cache later
+        self._renderable = None
 
     def get_content_width(self, a, b):
         return self._strips_cache[0].cell_length
 
-    def get_content_height(self, a, b, c):
+    def get_content_height(self, a=None, b=None, c=None):
         return len( self._strips_cache )
 
-    def _enRich_string(self, renderable: RenderableType, markup: bool=True) -> RenderableType:
-        if isinstance(renderable, str):
-            if markup:
-                renderable = Text.from_markup(renderable)
-            else:
-                renderable = Text(renderable)
-        return renderable
+    def _engender(self, renderable: RenderableType|None = None) -> None:
+        if renderable is not None:
+            self.renderable = renderable
+            if isinstance(renderable, str):
+                if self.markup:
+                    self.renderable = Text.from_markup(renderable)
+                else:
+                    self.renderable = Text(renderable)
+        self.renderable.stylize_before( self.rich_style )
+        self._renderable = self.renderable
+        self._strips_cache = ToGlyxels.from_renderable( self.renderable, self.basis, self.pips )
 
-    def update( self, renderable: str|None = None, basis: str|None = None, pips: bool|None = None ) -> None:
+    def update( self, renderable: RenderableType|None = None, basis: tuple|None = None, pips: bool|None = None ) -> None:
         """New display input"""
-        self.renderable = renderable or self.renderable
         self.basis = basis or self.basis
         self.pips = pips or self.pips
+        self._engender( renderable )
         self.refresh(layout=True)
 
     def render_line( self, row:int ) -> Strip:
         strip = Strip.blank(0)
-        if row == 0:
-            self.renderable.stylize_before( self.rich_style )
-            self._strips_cache = ToGlyxels.from_renderable( self.renderable, self.basis, self.pips )
-        if self._strips_cache is not None and row < len( self._strips_cache ):
+        if row == self.get_content_height() or self._renderable != self.renderable:
+            self._engender()
+        if row < self.get_content_height():
             strip = self._strips_cache[row]
-
         return strip
 
