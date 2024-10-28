@@ -10,6 +10,9 @@ dependencies = [
     "textual>=0.82.0",
 ]
 
+[tool.pylint."messages control"]
+allowed-redefined-builtins = [ 'id' ]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

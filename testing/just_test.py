@@ -1,7 +1,9 @@
-from textual_englyph import EnGlyph
+'''Boilerplate code for testing purposes'''
 from textual.app import App, ComposeResult
+from textual_englyph import EnGlyph
 
 class Test(App):
+    '''Test CSS and console markup styling the basic englyph use case'''
     DEFAULT_CSS = """
     EnGlyph {
         color: green;
