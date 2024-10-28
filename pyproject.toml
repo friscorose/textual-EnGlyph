@@ -1,6 +1,6 @@
 [project]
 name = "textual-englyph"
-version = "0.1.2"
+version = "0.1.4"
 description = "A Textual widget to generate stylized large text."
 readme = "README.md"
 license = {text = "MIT License"}
@@ -9,6 +9,9 @@ dependencies = [
     "pillow>=10.4.0",
     "textual>=0.82.0",
 ]
+
+[project.scripts]
+englyph_demo = "textual_englyph.main_demo:main_demo"
 
 [tool.pylint."messages control"]
 allowed-redefined-builtins = [ 'id' ]
