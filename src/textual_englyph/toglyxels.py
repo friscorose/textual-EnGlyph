@@ -10,8 +10,8 @@ from textual.strip import Strip
 from rich.console import Console
 from rich.segment import Segment
 from rich.style import Style
-#from rich.traceback import install
-#install()
+from rich.traceback import install
+install()
 #raise ValueError("My message")
 
 
@@ -125,7 +125,7 @@ class ToGlyxels():
     @staticmethod
     def from_renderable(
             phrase,
-            basis = (2,4),
+            basis = (0,0),
             pips = False,
             font_size: int = 12,
             font_name: str = "TerminusTTF-4.46.0.ttf"
@@ -133,6 +133,9 @@ class ToGlyxels():
         '''primary driver to convert text to large "letters" '''
         strips = []
         con_strips = Console().render_lines( phrase, pad=False )
+        if basis == (0,0):
+            return [ Strip(con_strips[0]) ]
+
         for a_strip in con_strips:
             for seg in a_strip:
                 pane = ToGlyxels._font_pane( seg.text, font_name, font_size )
