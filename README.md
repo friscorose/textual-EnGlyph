@@ -11,7 +11,7 @@ that has glyphs for the Symbols for Legacy Computing block defined by Unicode ve
  - Terminal (Windows)
  - ...and many more.
 
-## Known fonts
+## Known terminal fonts
  - Cascadia Code https://github.com/microsoft/cascadia-code/, v 2404.3 or later
  - GNU Unifont http://savannah.gnu.org/projects/unifont/, v 16.0 or later 
  - Iosevka https://typeof.net/Iosevka/, v 13.9.1 or later

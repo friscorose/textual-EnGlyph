@@ -123,16 +123,17 @@ class ToGlyxels():
         return joint
 
     @staticmethod
-    def from_renderable(
+    def from_renderable( # pylint: disable=R0913,R0917
             phrase,
             basis = (0,0),
             pips = False,
-            font_size: int = 12,
-            font_name: str = "TerminusTTF-4.46.0.ttf"
+            font_size:int = 12,
+            font_name:str = "TerminusTTF-4.46.0.ttf"
             ) -> List[List[Segment]]:
         '''primary driver to convert text to large "letters" '''
         strips = []
         con_strips = Console().render_lines( phrase, pad=False )
+        #raise ValueError("My message", con_strips)
         if basis == (0,0):
             return [ Strip(con_strips[0]) ]
 

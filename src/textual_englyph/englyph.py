@@ -1,6 +1,5 @@
 '''Create large text output module for Textual with custom widget EnGlyph'''
-# pylint: disable=R0913
-# would greatly increase complexity in optional widget control
+
 from textual.strip import Strip
 from textual.widget import Widget
 
@@ -15,9 +14,9 @@ class EnGlyph( Widget, inherit_bindings=False ):
 
     Args:
         renderable: Rich renderable or string to display
-        basis: cell glyph pixel in (x,y) tuple partitions
-        pips: show glyph pixels (glyxels) in reduced density
-        markup: Rich Text inline console styling bool, default is True
+        basis:tuple cell glyph pixel in (x,y) tuple partitions
+        pips:bool show glyph pixels (glyxels) in reduced density
+        markup:bool Rich Text inline console styling bool, default is True
         name: Standard Textual Widget argument
         id: Standard Textual Widget argument
         classes: Standard Textual Widget argument
@@ -31,7 +30,9 @@ class EnGlyph( Widget, inherit_bindings=False ):
     }
     """
 
-    def __init__( self,
+
+    def __init__( # pylint: disable=R0913 # following R0913 would greatly increase complexity
+                 self,
                  renderable: RenderableType = "",
                  *,
                  basis = (2,4),
@@ -65,7 +66,8 @@ class EnGlyph( Widget, inherit_bindings=False ):
     def _encache(self) -> None:
         self.renderable.stylize_before( self.rich_style )
         self._renderable = self.renderable
-        self._strips_cache = ToGlyxels.from_renderable( self.renderable, self.basis, self.pips )
+        self._strips_cache = ToGlyxels.from_renderable(
+                self.renderable, self.basis, self.pips )
 
     def _enrender(self, renderable: RenderableType|None = None) -> None:
         if renderable is not None:
@@ -96,7 +98,5 @@ class EnGlyph( Widget, inherit_bindings=False ):
         return strip
 
     def __str__(self) -> str:
-        output = []
-        for strip in self._strips_cache:
-            output.append( strip.text )
+        output = [strip.text for strip in self._strips_cache]
         return "\n".join( output )
