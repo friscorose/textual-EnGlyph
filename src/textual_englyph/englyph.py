@@ -1,5 +1,6 @@
 '''Create large text output module for Textual with custom widget EnGlyph'''
 
+from textual.reactive import Reactive, reactive
 from textual.strip import Strip
 from textual.widget import Widget
 
@@ -30,6 +31,7 @@ class EnGlyph( Widget, inherit_bindings=False ):
     }
     """
 
+    fontsize: Reactive[int] = reactive( 12, init=False )
 
     def __init__( # pylint: disable=R0913 # following R0913 would greatly increase complexity
                  self,
@@ -52,6 +54,29 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self._encache()
         self._renderable = None
 
+    def from_image( self, pil_image ):
+        self.scalable = True
+        return self
+
+    def __str__(self) -> str:
+        output = [strip.text for strip in self._strips_cache]
+        return "\n".join( output )
+
+    def _enrender(self, renderable: RenderableType|None = None) -> None:
+        if renderable is not None:
+            self.renderable = renderable
+            if isinstance(renderable, str):
+                if self.markup:
+                    self.renderable = Text.from_markup(renderable)
+                else:
+                    self.renderable = Text(renderable)
+
+    def _encache(self) -> None:
+        self.renderable.stylize_before( self.rich_style )
+        self._renderable = self.renderable
+        self._strips_cache = ToGlyxels.from_renderable(
+                self.renderable, self.basis, self.pips, self.fontsize )
+
     def get_content_width(self,
                           container=None,
                           viewport=None):
@@ -62,21 +87,6 @@ class EnGlyph( Widget, inherit_bindings=False ):
                            viewport=None,
                            width=None):
         return len( self._strips_cache )
-
-    def _encache(self) -> None:
-        self.renderable.stylize_before( self.rich_style )
-        self._renderable = self.renderable
-        self._strips_cache = ToGlyxels.from_renderable(
-                self.renderable, self.basis, self.pips )
-
-    def _enrender(self, renderable: RenderableType|None = None) -> None:
-        if renderable is not None:
-            self.renderable = renderable
-            if isinstance(renderable, str):
-                if self.markup:
-                    self.renderable = Text.from_markup(renderable)
-                else:
-                    self.renderable = Text(renderable)
 
     def update( self,
                renderable: RenderableType|None = None,
@@ -97,6 +107,3 @@ class EnGlyph( Widget, inherit_bindings=False ):
             strip = self._strips_cache[y]
         return strip
 
-    def __str__(self) -> str:
-        output = [strip.text for strip in self._strips_cache]
-        return "\n".join( output )

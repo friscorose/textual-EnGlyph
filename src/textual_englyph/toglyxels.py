@@ -114,12 +114,12 @@ class ToGlyxels():
         return style
 
     @staticmethod
-    def _chunk_join( strips, chunk ):
+    def _sheaf_join( strips, sheaf ):
         if len( strips ) == 0:
-            return chunk
+            return sheaf
         joint = []
         for idx, line in enumerate( strips ):
-            joint.append(Strip.join( (line,chunk[idx]) ).simplify())
+            joint.append(Strip.join( (line,sheaf[idx]) ).simplify())
         return joint
 
     @staticmethod
@@ -140,9 +140,13 @@ class ToGlyxels():
         for a_strip in con_strips:
             for seg in a_strip:
                 pane = ToGlyxels._font_pane( seg.text, font_name, font_size )
-                chunk = ToGlyxels.pane2strips( seg.style, basis, pane, pips )
-                strips = ToGlyxels._chunk_join( strips, chunk )
+                sheaf = ToGlyxels.pane2strips( seg.style, basis, pane, pips )
+                strips = ToGlyxels._sheaf_join( strips, sheaf )
         return strips
+
+    @staticmethod
+    def from_pil_image():
+        pass
 
     @staticmethod
     def _font_pane( phrase, font_name, font_size ):
