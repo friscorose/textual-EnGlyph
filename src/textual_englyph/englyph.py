@@ -31,7 +31,7 @@ class EnGlyph( Widget, inherit_bindings=False ):
     }
     """
 
-    fontsize: Reactive[int] = reactive( 12 )
+    fontsize: Reactive[int] = reactive( 12, recompose=True )
 
     def __init__( # pylint: disable=R0913 # following R0913 would greatly increase complexity
                  self,
