@@ -130,7 +130,8 @@ class ToGlyxels():
             font_size:int = 12,
             font_name:str = "TerminusTTF-4.46.0.ttf"
             ) -> List[List[Segment]]:
-        '''primary driver to convert text to large "letters" '''
+        '''primary driver to convert text to large "letters" 
+           Default font size pixelizing: [12,14,16,18,20,22,24,28,32,...] '''
         strips = []
         con_strips = Console().render_lines( phrase, pad=False )
         #raise ValueError("My message", con_strips)

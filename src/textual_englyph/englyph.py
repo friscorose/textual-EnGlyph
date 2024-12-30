@@ -1,6 +1,5 @@
 '''Create large text output module for Textual with custom widget EnGlyph'''
 
-from textual.reactive import Reactive, reactive
 from textual.strip import Strip
 from textual.widget import Widget
 
@@ -17,6 +16,7 @@ class EnGlyph( Widget, inherit_bindings=False ):
         renderable: Rich renderable or string to display
         basis:tuple cell glyph pixel in (x,y) tuple partitions
         pips:bool show glyph pixels (glyxels) in reduced density
+        font_size:set glyxel height of font
         markup:bool Rich Text inline console styling bool, default is True
         name: Standard Textual Widget argument
         id: Standard Textual Widget argument
@@ -31,24 +31,24 @@ class EnGlyph( Widget, inherit_bindings=False ):
     }
     """
 
-    fontsize: Reactive[int] = reactive( 12, recompose=True )
-
     def __init__( # pylint: disable=R0913 # following R0913 would greatly increase complexity
                  self,
                  renderable: RenderableType = "",
                  *,
                  basis = (2,4),
                  pips = False,
+                 font_size:int = 12,
                  markup: bool = True,
                  name: str | None = None,
                  id = None,
                  classes: str | None = None,
-                 disabled: bool = False,
+                 disabled: bool = False
                  ) -> None:
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
         self.markup = markup
         self.basis = basis
         self.pips = pips
+        self._font_size = font_size
         self._enrender( renderable )
         #self.rich_style is not settled yet, trigger regenerate _strip_cache later
         self._encache()
@@ -75,7 +75,7 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self.renderable.stylize_before( self.rich_style )
         self._renderable = self.renderable
         self._strips_cache = ToGlyxels.from_renderable(
-                self.renderable, self.basis, self.pips, self.fontsize )
+                self.renderable, self.basis, self.pips, self._font_size )
 
     def get_content_width(self,
                           container=None,
@@ -91,10 +91,13 @@ class EnGlyph( Widget, inherit_bindings=False ):
     def update( self,
                renderable: RenderableType|None = None,
                basis: tuple|None = None,
-               pips: bool|None = None ) -> None:
+               pips: bool|None = None,
+               font_size: int|None = None
+               ) -> None:
         """New display input"""
         self.basis = basis or self.basis
         self.pips = pips or self.pips
+        self._font_size = font_size or self._font_size
         self._enrender( renderable )
         self._encache()
         self.refresh(layout=True)
@@ -106,4 +109,3 @@ class EnGlyph( Widget, inherit_bindings=False ):
         if y < self.get_content_height():
             strip = self._strips_cache[y]
         return strip
-
