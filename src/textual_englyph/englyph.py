@@ -1,10 +1,13 @@
 '''Create large text output module for Textual with custom widget EnGlyph'''
 
+from typing import List
+
+from rich.console import Console, RenderableType
+from rich.segment import Segment
+from rich.text import Text
+
 from textual.strip import Strip
 from textual.widget import Widget
-
-from rich.console import RenderableType
-from rich.text import Text
 
 from .toglyxels import ToGlyxels
 
@@ -14,14 +17,14 @@ class EnGlyph( Widget, inherit_bindings=False ):
 
     Args:
         renderable: Rich renderable or string to display
-        basis:tuple cell glyph pixel in (x,y) tuple partitions
-        pips:bool show glyph pixels (glyxels) in reduced density
-        font_size:set glyxel height of font
-        markup:bool Rich Text inline console styling bool, default is True
-        name: Standard Textual Widget argument
-        id: Standard Textual Widget argument
-        classes: Standard Textual Widget argument
-        disabled: Standard Textual Widget argument
+        basis:tuple[(2,4)], the (x,y) partitions of cell glyph pixels (glyxel | gx)
+        pips:bool[False], show glyxels in reduced density
+        font_size:int[12], set height of font in glyxels, ie. 12pt -> 12gx
+        markup:bool[True], Rich Text inline console styling of string
+        name:str, Standard Textual Widget argument
+        id:str, Standard Textual Widget argument
+        classes:str, Standard Textual Widget argument
+        disabled:bool, Standard Textual Widget argument
     '''
 
     DEFAULT_CSS = """
@@ -31,12 +34,20 @@ class EnGlyph( Widget, inherit_bindings=False ):
     }
     """
 
-    def __init__( # pylint: disable=R0913 # following R0913 would greatly increase complexity
+    # Rich Text or string for visual rendering to a slate
+    _text = None
+    # a PIL image for visual rendering to a slate
+    _pane = None
+    # a list[Strips] for the visual presence of cells
+    _slate = None
+
+    def __init__( # pylint: disable=R0902,R0913 # following would greatly increase complexity
                  self,
-                 renderable: RenderableType = "",
+                 renderable,
                  *,
                  basis = (2,4),
                  pips = False,
+                 font_name:str = "TerminusTTF-4.46.0.ttf",
                  font_size:int = 12,
                  markup: bool = True,
                  name: str | None = None,
@@ -48,45 +59,50 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self.markup = markup
         self.basis = basis
         self.pips = pips
+        self._font_name = font_name
         self._font_size = font_size
         self._enrender( renderable )
-        #self.rich_style is not settled yet, trigger regenerate _strip_cache later
+        #self.rich_style is not settled yet, trigger regenerate _slate_cache later
         self._encache()
         self._renderable = None
 
-    def from_image( self, pil_image ):
-        self.scalable = True
-        return self
+    def __add__( self, rhs ):
+        """create the union of two EnGlyphed widgets """
+        return self._union( self, rhs )
+
+    __radd__ = __add__
+
+    def __sub__( self, rhs ):
+        """create the difference of two EnGlyphed widgetslinux disables  """
+        return self._difference( self, rhs )
+
+    def __mul__( self, rhs ):
+        """create the intersection of two EnGlyphed widgets """
+        return self._intersection( self, rhs )
 
     def __str__(self) -> str:
-        output = [strip.text for strip in self._strips_cache]
+        output = [strip.text for strip in self._slate_cache]
         return "\n".join( output )
 
     def _enrender(self, renderable: RenderableType|None = None) -> None:
-        if renderable is not None:
-            self.renderable = renderable
-            if isinstance(renderable, str):
-                if self.markup:
-                    self.renderable = Text.from_markup(renderable)
-                else:
-                    self.renderable = Text(renderable)
+        """A stub handler to style, if appropriate, an input for glyph processing"""
+        pass
 
     def _encache(self) -> None:
-        self.renderable.stylize_before( self.rich_style )
-        self._renderable = self.renderable
-        self._strips_cache = ToGlyxels.from_renderable(
-                self.renderable, self.basis, self.pips, self._font_size )
+        """A stub handler to accept an input for glyph processing"""
+        pass
+
 
     def get_content_width(self,
                           container=None,
                           viewport=None):
-        return self._strips_cache[0].cell_length
+        return self._slate_cache[0].cell_length
 
     def get_content_height(self,
                            container=None,
                            viewport=None,
                            width=None):
-        return len( self._strips_cache )
+        return len( self._slate_cache )
 
     def update( self,
                renderable: RenderableType|None = None,
@@ -107,5 +123,59 @@ class EnGlyph( Widget, inherit_bindings=False ):
         if self._renderable != self.renderable:
             self._encache()
         if y < self.get_content_height():
-            strip = self._strips_cache[y]
+            strip = self._slate_cache[y]
         return strip
+
+    def from_image( self, pil_image ):
+        return self
+
+class EnGlyphText( EnGlyph ):
+    """Process a textual renderable (including Rich.Text)"""
+    def _from_text( self, text ) -> List[List[Segment]]:
+        '''primary driver to scale Text according to basis
+           Default font size pixelizing: [12,14,16,18,20,22,24,28,32,...] '''
+        cons_slate = Console().render_lines( text, pad=False )
+        #raise ValueError("My message", cons_slate)
+        if self.basis == (0,0):
+            return [ Strip(cons_slate[0]) ]
+
+        slate_buf = []
+        for strip in cons_slate:
+            for seg in strip:
+                pane = ToGlyxels.font_pane( seg.text, self._font_name, self._font_size )
+                slate = ToGlyxels.pane2slate( pane, seg.style, self.basis, self.pips )
+                slate_buf = ToGlyxels.slate_join( slate_buf, slate )
+        return slate_buf
+
+    def _enrender(self, renderable: RenderableType|None = None) -> None:
+        """A stub handler to style, if appropriate, an input for glyph processing"""
+        if renderable is not None:
+            self.renderable = renderable
+            if isinstance(renderable, str):
+                if self.markup:
+                    self.renderable = Text.from_markup(renderable)
+                else:
+                    self.renderable = Text(renderable)
+
+    def _encache(self) -> None:
+        """A stub handler to accept an input for glyph processing"""
+        self.renderable.stylize_before( self.rich_style )
+        self._renderable = self.renderable
+        self._slate_cache = self._from_text( self.renderable )
+
+class EnGlyphSlate( EnGlyph ):
+    """Process a list of Strips"""
+    def _enrender(self, renderable: list[Strip]|None = None) -> None:
+        """A stub handler to style, if appropriate, an input for glyph processing"""
+        if renderable is not None:
+            self.renderable = renderable
+            if self.basis == (0,0):
+                return
+
+    def _encache(self) -> None:
+            self._slate_cache = self._renderable = self.renderable
+
+class EnGlyphImage( EnGlyph ):
+    """Process a PIL image into glyxels"""
+    def _encache(self) -> None:
+            pass

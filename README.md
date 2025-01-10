@@ -51,4 +51,3 @@ and run it (use ctrl-c to exit)
 ```bash
 uv run test.py
 ```
-
