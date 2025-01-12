@@ -12,7 +12,7 @@ class Test(App):
     """
 
     def compose(self) -> ComposeResult:
-        yield EnGlyphText("Hello [blue on default]Textual!")
+        yield EnGlyphText("Hello [blue]Textual!", basis=(2,2))
 
 if __name__ == "__main__":
     Test().run(inline=True, inline_no_clear=True)
