@@ -84,8 +84,10 @@ class ToGlyxels():
     def _colors2rgb4sty( rgb_list ):
         """Compute broken but fast RGB centroid"""
         n = len( rgb_list )
-        v_sum = [sum(x) for x in zip(*rgb_list)]
-        R,G,B = [int(x/n) for x in v_sum]
+        s = [sum(x*x) for x in zip(*rgb_list)]
+        ms = [x/n for x in v_sum]
+        rms = [math.sqrt(x) for x in ms]
+        R,G,B = [ int(x) for x in rms]
         return f"rgb({R},{G},{B})"
 
     @staticmethod
