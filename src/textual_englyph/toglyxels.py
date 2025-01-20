@@ -63,21 +63,30 @@ class ToGlyxels():
 
     @staticmethod
     def _img4cell2vals4seg( image ):
-        glyph_idx = 0
-        duotone = image.convert( colors=2 )
-        #raise Exception( list(duotone.getdata()) )
-        dt_list = list(duotone.getdata())
-        for exp, color_rgb in enumerate( list(duotone.getdata()) ):
-            if exp == 0:
-                fg = bg = color_rgb
-            if color_rgb != bg:
-                fg = color_rgb
-                glyph_idx += 2**exp
-        fg_color = f"rgb({fg[0]},{fg[1]},{fg[2]})"
-        bg_color = f"rgb({bg[0]},{bg[1]},{bg[2]})"
+        fg = []
+        bg = []
+        glut_idx = 0
+        duotone = image.quantize( colors=2 )
+        for idx, test_gx in enumerate( list(duotone.getdata()) ):
+            if test_gx:
+                fg.append( image.getdata()[idx] )
+                glut_idx += 2**idx
+            else:
+                bg.append( image.getdata()[idx] )
+
+        fg_color = ToGlyxels._colors2rgb4sty( fg )
+        bg_color = ToGlyxels._colors2rgb4sty( bg )
         glyph_sty = Style.parse(" on ".join( [fg_color, bg_color] )) 
         #raise Exception( (glyph_idx, glyph_sty) )
-        return (glyph_idx, glyph_sty)
+        return (glut_idx, glyph_sty)
+
+    @staticmethod
+    def _colors2rgb4sty( rgb_list ):
+        """Compute broken but fast RGB centroid"""
+        n = len( rgb_list )
+        v_sum = [sum(x) for x in zip(*rgb_list)]
+        R,G,B = [int(x/n) for x in v_sum]
+        return f"rgb({R},{G},{B})"
 
     @staticmethod
     def _idx4pal2rgb4sty( palette, index ):
