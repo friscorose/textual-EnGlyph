@@ -84,85 +84,12 @@ class ToGlyxels():
     def _colors2rgb4sty( rgb_list ):
         """Compute broken but fast RGB centroid"""
         n = len( rgb_list )
-        s = [sum(x*x) for x in zip(*rgb_list)]
-        ms = [x/n for x in v_sum]
-        rms = [math.sqrt(x) for x in ms]
-        R,G,B = [ int(x) for x in rms]
-        return f"rgb({R},{G},{B})"
-
-    @staticmethod
-    def _idx4pal2rgb4sty( palette, index ):
-        R,G,B = palette[index:index+3]
-        return f"rgb({R},{G},{B})"
-
-
-    @staticmethod
-    def _get_fg_info( glyxel_color, mode ):
-        #https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.convert
-        #Assume grayscale
-        glyxel_luminance = glyxel_color
-        glyxel_rgb = f"rgb({glyxel_color},{glyxel_color},{glyxel_color})"
-        if mode == "RGB":
-            R,G,B = glyxel_color
-            glyxel_luminance = R*0.299 + G*0.587 + B*0.114
-            glyxel_rgb = f"rgb({R},{G},{B})"
-        elif mode == "RGBA":
-            R,G,B,A = glyxel_color
-            glyxel_luminance = (R*0.299 + G*0.587 + B*0.114)*A/255
-            R = R*A/255
-            G = G*A/255
-            B = B*A/255
-            glyxel_rgb = f"rgb({R},{G},{B})"
-        return (glyxel_luminance, glyxel_rgb)
-
-    @staticmethod
-    def _get_glyph_info( x: int, y: int, celllist: list ):
-        offset = 0
-        fg_color = "default"
-        bg_color = "default"
-        brightlist = []
-        darklist = []
-        colors = []
-        
-        """ Process current cell pixels for brightness (intensity) bilevel 'coloring'. """
-        for exp, pixel in enumerate( celllist ):
-            if self._get_intensity( pixel ) > self.weight:
-                brightlist.append( pixel )
-                offset += 2**exp
-            else:
-                darklist.append( pixel )
-
-        if darklist:
-            """ Simple RGB component averaging of background pixels, is this good?"""
-            bg_color = self._get_color( tuple( [int(sum(y) / len(y)) for y in zip(*darklist)] ) )
-            if brightlist:
-                fg_color = self._get_color( tuple( [int(sum(y) / len(y)) for y in zip(*brightlist)] ) )
-        elif not self.mono:
-            """ All bright condition, reprocess cell for dominant 2 color pattern.
-                A possibly better approach here would be use adjacent cells in a
-                Floyd-Steinberg esque 2-color dithering downsampling."""
-            offset = 0
-            cellimg = Image.new( 'RGBA', (self.x_pixels, self.y_pixels) )
-            cellimg.putdata( celllist )
-            cellbiimg = cellimg.convert( 'P', dither=None, colors=2 )
-            palette = cellbiimg.getpalette()
-            cellbilist = list( cellbiimg.getdata() )
-            for exp, pixel in enumerate( cellbilist ):
-                if pixel:
-                    offset += 2**exp
-            bg_color = self._get_color( (palette[0], palette[1], palette[2], 255) )
-            fg_color = self._get_color( (palette[3], palette[4], palette[5], 255) )
-
-        if fg_color is not None:
-            colors.append( fg_color )
+        if n == 0:
+            R = G = B = 0
         else:
-            colors.append( "default" )
-        if bg_color is not None:
-            colors.append( bg_color )
-        else:
-            colors.append( "default" )
-        style = Style.parse(" on ".join(colors)) 
-        return( offset, style )
+            v_sum = [sum(x) for x in zip(*rgb_list)]
+            R,G,B = [int(x/n) for x in v_sum]
+        return f"rgb({R},{G},{B})"
 
     @staticmethod
     def pane2slate(

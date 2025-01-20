@@ -175,8 +175,6 @@ class EnGlyphImage( EnGlyph ):
         if renderable is not None:
             if isinstance( renderable, str ):
                 renderable = Image.open( renderable )
-            renderable = renderable.resize((64,64)) 
-            #renderable.show()
             self.renderable = ToGlyxels.frame2slate( renderable )
 
     def _encache(self) -> None:
