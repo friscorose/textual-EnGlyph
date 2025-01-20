@@ -41,31 +41,33 @@ class ToGlyxels():
 
     @staticmethod
     def frame2slate( image,
-                    mode_color=None,
-                    mode_depth=None,
                     basis=(2,4),
                     pips=False
                     ):
-        _,_,x,y = image.getbbox()
-
+        """A fast method to convert a PIL image into a slate (list of strips)"""
+        _,_,x_size,y_size = image.getbbox()
+        dx, dy = basis
         glut = ToGlyxels.pips_glut if pips else ToGlyxels.full_glut
-
         slate = []
-        for y_pixpos in range( 0, y, basis[1] ):
+
+        for y_pos in range( 0, y_size, dy ):
             y_strip = []
-            for x_pixpos in range( 0, x, basis[0] ):
-                cell_img = image.crop( (x_pixpos, y_pixpos, x_pixpos+basis[0], y_pixpos+basis[1]) )
-                glyph_idx, glyph_sty = ToGlyxels._img4cell2vals4seg( cell_img )
-                glyph = glut[basis[0]][basis[1]][glyph_idx]
+            for x_pos in range( 0, x_size, dx ):
+                cell_img = image.crop( (x_pos, y_pos, x_pos+dx, y_pos+dy) )
+                glut_idx, glyph_sty = ToGlyxels._img4cell2vals4seg( cell_img )
+                glyph = glut[dx][dy][glut_idx]
                 y_strip.append( Segment( glyph, glyph_sty ) )
             slate.append( Strip(y_strip) )
+
         return slate
 
     @staticmethod
     def _img4cell2vals4seg( image ):
+        """Compute glyph look up table offset and associated style coloring"""
         fg = []
         bg = []
         glut_idx = 0
+
         duotone = image.quantize( colors=2 )
         for idx, test_gx in enumerate( list(duotone.getdata()) ):
             if test_gx:
@@ -77,7 +79,7 @@ class ToGlyxels():
         fg_color = ToGlyxels._colors2rgb4sty( fg )
         bg_color = ToGlyxels._colors2rgb4sty( bg )
         glyph_sty = Style.parse(" on ".join( [fg_color, bg_color] )) 
-        #raise Exception( (glyph_idx, glyph_sty) )
+
         return (glut_idx, glyph_sty)
 
     @staticmethod

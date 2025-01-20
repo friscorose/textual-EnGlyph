@@ -1,6 +1,7 @@
 '''Create large text output module for Textual with custom widget EnGlyph'''
 
 from PIL import Image
+import io
 import os
 from typing import List
 
@@ -142,7 +143,7 @@ class EnGlyph( Widget, inherit_bindings=False ):
 class EnGlyphText( EnGlyph ):
     """Process a textual renderable (including Rich.Text)"""
     def _enrender(self, renderable: RenderableType|None = None) -> None:
-        """A stub handler to style, if appropriate, an input for glyph processing"""
+        """A stub handler to pre-render an input for glyph processing"""
         if renderable is not None:
             self.renderable = renderable
             if isinstance(renderable, str):
@@ -152,16 +153,16 @@ class EnGlyphText( EnGlyph ):
                     self.renderable = Text(renderable)
 
     def _encache(self) -> None:
-        """A stub handler to accept an input for glyph processing"""
+        """A stub handler to flag as ready for glyph rendering"""
         self.renderable.stylize_before( self.rich_style )
         self._renderable = self.renderable
         cons_slate = Console().render_lines( self.renderable, pad=False )
         self._slate_cache = self._enslate( cons_slate )
 
 class EnGlyphSlate( EnGlyph ):
-    """Process a list of Strips"""
+    """Process a list of Strips (or a widget?)"""
     def _enrender(self, renderable: list[Strip]|None = None) -> None:
-        """A stub handler to style, if appropriate, an input for glyph processing"""
+        """A stub handler to pre-render an input for glyph processing"""
         if renderable is not None:
             self.renderable = self._enslate( renerable )
 
@@ -171,11 +172,16 @@ class EnGlyphSlate( EnGlyph ):
 class EnGlyphImage( EnGlyph ):
     """Process a PIL image into glyxels"""
     def _enrender(self, renderable = None) -> None:
-        """A stub handler to style, if appropriate, an input for glyph processing"""
+        """A stub handler to pre-render an input for glyph processing"""
         if renderable is not None:
+            im_buff = renderable
             if isinstance( renderable, str ):
-                renderable = Image.open( renderable )
-            self.renderable = ToGlyxels.frame2slate( renderable )
+                with open( renderable, 'rb') as fh:
+                    im_data = fh.read()
+                    im_buff = io.BytesIO( im_data )
+            self.renderable = Image.open( renderable )
 
     def _encache(self) -> None:
-            self._slate_cache = self._renderable = self.renderable
+        """A stub handler to flag as ready for glyph rendering"""
+        self._renderable = self.renderable
+        self._slate_cache = ToGlyxels.frame2slate( self._renderable )
