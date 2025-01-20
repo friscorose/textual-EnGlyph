@@ -40,6 +40,120 @@ class ToGlyxels():
 
 
     @staticmethod
+    def frame2slate( image,
+                    mode_color=None,
+                    mode_depth=None,
+                    basis=(2,4),
+                    pips=False
+                    ):
+        _,_,x,y = image.getbbox()
+
+        glut = ToGlyxels.pips_glut if pips else ToGlyxels.full_glut
+
+        slate = []
+        for y_pixpos in range( 0, y, basis[1] ):
+            y_strip = []
+            for x_pixpos in range( 0, x, basis[0] ):
+                cell_img = image.crop( (x_pixpos, y_pixpos, x_pixpos+basis[0], y_pixpos+basis[1]) )
+                glyph_idx, glyph_sty = ToGlyxels._img4cell2vals4seg( cell_img )
+                glyph = glut[basis[0]][basis[1]][glyph_idx]
+                y_strip.append( Segment( glyph, glyph_sty ) )
+            slate.append( Strip(y_strip) )
+        return slate
+
+    @staticmethod
+    def _img4cell2vals4seg( image ):
+        glyph_idx = 0
+        duotone = image.convert( colors=2 )
+        #raise Exception( list(duotone.getdata()) )
+        dt_list = list(duotone.getdata())
+        for exp, color_rgb in enumerate( list(duotone.getdata()) ):
+            if exp == 0:
+                fg = bg = color_rgb
+            if color_rgb != bg:
+                fg = color_rgb
+                glyph_idx += 2**exp
+        fg_color = f"rgb({fg[0]},{fg[1]},{fg[2]})"
+        bg_color = f"rgb({bg[0]},{bg[1]},{bg[2]})"
+        glyph_sty = Style.parse(" on ".join( [fg_color, bg_color] )) 
+        #raise Exception( (glyph_idx, glyph_sty) )
+        return (glyph_idx, glyph_sty)
+
+    @staticmethod
+    def _idx4pal2rgb4sty( palette, index ):
+        R,G,B = palette[index:index+3]
+        return f"rgb({R},{G},{B})"
+
+
+    @staticmethod
+    def _get_fg_info( glyxel_color, mode ):
+        #https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.convert
+        #Assume grayscale
+        glyxel_luminance = glyxel_color
+        glyxel_rgb = f"rgb({glyxel_color},{glyxel_color},{glyxel_color})"
+        if mode == "RGB":
+            R,G,B = glyxel_color
+            glyxel_luminance = R*0.299 + G*0.587 + B*0.114
+            glyxel_rgb = f"rgb({R},{G},{B})"
+        elif mode == "RGBA":
+            R,G,B,A = glyxel_color
+            glyxel_luminance = (R*0.299 + G*0.587 + B*0.114)*A/255
+            R = R*A/255
+            G = G*A/255
+            B = B*A/255
+            glyxel_rgb = f"rgb({R},{G},{B})"
+        return (glyxel_luminance, glyxel_rgb)
+
+    @staticmethod
+    def _get_glyph_info( x: int, y: int, celllist: list ):
+        offset = 0
+        fg_color = "default"
+        bg_color = "default"
+        brightlist = []
+        darklist = []
+        colors = []
+        
+        """ Process current cell pixels for brightness (intensity) bilevel 'coloring'. """
+        for exp, pixel in enumerate( celllist ):
+            if self._get_intensity( pixel ) > self.weight:
+                brightlist.append( pixel )
+                offset += 2**exp
+            else:
+                darklist.append( pixel )
+
+        if darklist:
+            """ Simple RGB component averaging of background pixels, is this good?"""
+            bg_color = self._get_color( tuple( [int(sum(y) / len(y)) for y in zip(*darklist)] ) )
+            if brightlist:
+                fg_color = self._get_color( tuple( [int(sum(y) / len(y)) for y in zip(*brightlist)] ) )
+        elif not self.mono:
+            """ All bright condition, reprocess cell for dominant 2 color pattern.
+                A possibly better approach here would be use adjacent cells in a
+                Floyd-Steinberg esque 2-color dithering downsampling."""
+            offset = 0
+            cellimg = Image.new( 'RGBA', (self.x_pixels, self.y_pixels) )
+            cellimg.putdata( celllist )
+            cellbiimg = cellimg.convert( 'P', dither=None, colors=2 )
+            palette = cellbiimg.getpalette()
+            cellbilist = list( cellbiimg.getdata() )
+            for exp, pixel in enumerate( cellbilist ):
+                if pixel:
+                    offset += 2**exp
+            bg_color = self._get_color( (palette[0], palette[1], palette[2], 255) )
+            fg_color = self._get_color( (palette[3], palette[4], palette[5], 255) )
+
+        if fg_color is not None:
+            colors.append( fg_color )
+        else:
+            colors.append( "default" )
+        if bg_color is not None:
+            colors.append( bg_color )
+        else:
+            colors.append( "default" )
+        style = Style.parse(" on ".join(colors)) 
+        return( offset, style )
+
+    @staticmethod
     def pane2slate(
             pane,
             style: Style|None,
@@ -128,8 +242,3 @@ class ToGlyxels():
         _,_,r,b = font.getbbox( phrase )
         mask = list( font.getmask(phrase, mode='1') )
         return (r,b,mask)
-
-    @staticmethod
-    def from_pil_image(image, resize=None, remode=None):
-        if remode is not None:
-            pass

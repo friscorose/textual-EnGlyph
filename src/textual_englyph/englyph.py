@@ -1,5 +1,7 @@
 '''Create large text output module for Textual with custom widget EnGlyph'''
 
+from PIL import Image
+import os
 from typing import List
 
 from rich.console import Console, RenderableType
@@ -168,8 +170,14 @@ class EnGlyphSlate( EnGlyph ):
 
 class EnGlyphImage( EnGlyph ):
     """Process a PIL image into glyxels"""
-    def from_image( self, pil_image ):
-        return self
+    def _enrender(self, renderable = None) -> None:
+        """A stub handler to style, if appropriate, an input for glyph processing"""
+        if renderable is not None:
+            if isinstance( renderable, str ):
+                renderable = Image.open( renderable )
+            renderable = renderable.resize((64,64)) 
+            #renderable.show()
+            self.renderable = ToGlyxels.frame2slate( renderable )
 
     def _encache(self) -> None:
-            pass
+            self._slate_cache = self._renderable = self.renderable
