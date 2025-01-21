@@ -40,10 +40,7 @@ class ToGlyxels():
 
 
     @staticmethod
-    def frame2slate( image,
-                    basis=(2,4),
-                    pips=False
-                    ):
+    def image2slate( image, basis=(2,4), pips=False ):
         """A fast method to convert a PIL image into a slate (list of strips)"""
         _,_,x_size,y_size = image.getbbox()
         dx, dy = basis

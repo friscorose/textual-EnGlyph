@@ -83,6 +83,10 @@ class EnGlyph( Widget, inherit_bindings=False ):
         """create the intersection of two EnGlyphed widgets """
         return self._intersection( self, rhs )
 
+    def __div__( self, rhs ):
+        """create the intersection of two EnGlyphed widgets """
+        return self._disection( self, rhs )
+
     def __str__(self) -> str:
         output = [strip.text for strip in self._slate_cache]
         return "\n".join( output )
@@ -106,6 +110,10 @@ class EnGlyph( Widget, inherit_bindings=False ):
                 slate = ToGlyxels.pane2slate( pane, seg.style, self.basis, self.pips )
                 slate_buf = ToGlyxels.slate_join( slate_buf, slate )
         return slate_buf
+
+    def _intersection( self, rhs ):
+        if isinstance( rhs, float ):
+            pass
 
     def get_content_width(self,
                           container=None,
@@ -156,7 +164,7 @@ class EnGlyphText( EnGlyph ):
         """A stub handler to flag as ready for glyph rendering"""
         self.renderable.stylize_before( self.rich_style )
         self._renderable = self.renderable
-        cons_slate = Console().render_lines( self.renderable, pad=False )
+        cons_slate = Console().render_lines( self._renderable, pad=False )
         self._slate_cache = self._enslate( cons_slate )
 
 class EnGlyphSlate( EnGlyph ):
@@ -170,7 +178,7 @@ class EnGlyphSlate( EnGlyph ):
             self._slate_cache = self._renderable = self.renderable
 
 class EnGlyphImage( EnGlyph ):
-    """Process a PIL image into glyxels"""
+    """Process a PIL image (or path to) into glyxels"""
     def _enrender(self, renderable = None) -> None:
         """A stub handler to pre-render an input for glyph processing"""
         if renderable is not None:
@@ -179,9 +187,29 @@ class EnGlyphImage( EnGlyph ):
                 with open( renderable, 'rb') as fh:
                     im_data = fh.read()
                     im_buff = io.BytesIO( im_data )
-            self.renderable = Image.open( renderable )
+            self.renderable = Image.open( im_buff )
+            self._n_frames = self._get_frame_count( self.renderable )
+            self.app.log( self._n_frames )
+            if self._n_frames:
+                self._n_repeats = 3
+                self._duration = self.renderable.info.get("duration", 100)
 
     def _encache(self) -> None:
         """A stub handler to flag as ready for glyph rendering"""
         self._renderable = self.renderable
-        self._slate_cache = ToGlyxels.frame2slate( self._renderable )
+        frame = self._renderable
+        if self._n_frames > 1:
+            self._renderable.seek(29)
+            frame = self._renderable.convert('RGB')
+            frame = frame.reduce( 4 )
+        self._slate_cache = ToGlyxels.image2slate( frame )
+
+    def _get_frame_count( self, image ):
+        n_frames = 0
+        while True:
+            try:
+                image.seek(n_frames + 1)
+                n_frames += 1
+            except EOFError:
+                break
+        return n_frames
