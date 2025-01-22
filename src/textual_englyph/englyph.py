@@ -9,6 +9,7 @@ from rich.console import Console, RenderableType
 from rich.segment import Segment
 from rich.text import Text
 
+from textual.reactive import reactive
 from textual.strip import Strip
 from textual.widget import Widget
 
@@ -37,37 +38,18 @@ class EnGlyph( Widget, inherit_bindings=False ):
     }
     """
 
-    # Rich Text or string for visual rendering to a slate
-    _text = None
-    # a PIL image for visual rendering to a slate
-    _pane = None
-    # a list[Strips] for the visual presence of cells
-    _slate = None
-
-    def __init__( # pylint: disable=R0902,R0913 # following would greatly increase complexity
-                 self,
-                 renderable,
-                 *,
+    def __init__(self, renderable,
+                 *args, 
                  basis = (2,4),
                  pips = False,
-                 font_name:str = "TerminusTTF-4.46.0.ttf",
-                 font_size:int = 12,
-                 markup: bool = True,
-                 name: str | None = None,
-                 id = None,
-                 classes: str | None = None,
-                 disabled: bool = False
-                 ) -> None:
-        super().__init__(name=name, id=id, classes=classes, disabled=disabled)
-        self.markup = markup
+                 **kwargs ):
+        super().__init__( *args, **kwargs )
+        self._predicate = self._preprocess( renderable )
         self.basis = basis
         self.pips = pips
-        self._font_name = font_name
-        self._font_size = font_size
-        self._enrender( renderable )
+        self._process()
         #self.rich_style is not settled yet, trigger regenerate _slate_cache later
-        self._encache()
-        self._renderable = None
+        self._postprocess()
 
     def __add__( self, rhs ):
         """create the union of two EnGlyphed widgets """
@@ -87,33 +69,25 @@ class EnGlyph( Widget, inherit_bindings=False ):
         """create the intersection of two EnGlyphed widgets """
         return self._disection( self, rhs )
 
+    def _intersection( self, rhs ):
+        if isinstance( rhs, float ):
+            pass
+
     def __str__(self) -> str:
         output = [strip.text for strip in self._slate_cache]
         return "\n".join( output )
 
-    def _enrender(self, renderable: RenderableType|None = None) -> None:
-        """A stub handler to style, if appropriate, an input for glyph processing"""
+    def _preprocess(self) -> None:
+        """A stub handler for processing the input _predicate to the renderable"""
         pass
 
-    def _encache(self) -> None:
-        """A stub handler to accept an input for glyph processing"""
+    def _process(self) -> None:
+        """A stub handler for processing a renderable"""
         pass
 
-    def _enslate(self, slate ) -> None:
-        """A stub handler to accept a slate for glyph processing"""
-        if self.basis == (0,0):
-            return [ Strip(strip) for strip in slate ]
-        slate_buf = []
-        for strip in slate:
-            for seg in strip:
-                pane = ToGlyxels.font_pane( seg.text, self._font_name, self._font_size )
-                slate = ToGlyxels.pane2slate( pane, seg.style, self.basis, self.pips )
-                slate_buf = ToGlyxels.slate_join( slate_buf, slate )
-        return slate_buf
-
-    def _intersection( self, rhs ):
-        if isinstance( rhs, float ):
-            pass
+    def _postprocess(self) -> None:
+        """A stub handler to cache a slate (list of strips) for rendering"""
+        pass
 
     def get_content_width(self,
                           container=None,
@@ -136,22 +110,32 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self.basis = basis or self.basis
         self.pips = pips or self.pips
         self._font_size = font_size or self._font_size
-        self._enrender( renderable )
-        self._encache()
+        self._preprocess( renderable )
+        self._process()
+        self._postprocess()
         self.refresh(layout=True)
 
+    def on_mount( self ):
+        self._process()
+        self._postprocess()
+
     def render_line( self, y:int ) -> Strip:
-        strip = Strip.blank(0)
-        if self._renderable != self.renderable:
-            self._encache()
-        if y < self.get_content_height():
-            strip = self._slate_cache[y]
-        return strip
+        return self._slate_cache[y]
 
 class EnGlyphText( EnGlyph ):
     """Process a textual renderable (including Rich.Text)"""
-    def _enrender(self, renderable: RenderableType|None = None) -> None:
-        """A stub handler to pre-render an input for glyph processing"""
+    def __init__(self, *args, 
+                 markup: bool = True,
+                 font_name:str = "TerminusTTF-4.46.0.ttf",
+                 font_size:int = 12,
+                 **kwargs ):
+        self.markup = markup
+        self._font_name = font_name
+        self._font_size = font_size
+        super().__init__( *args, **kwargs )
+
+    def _preprocess(self, renderable: RenderableType|None = None):
+        """A stub handler for processing the input _predicate to the renderable"""
         if renderable is not None:
             self.renderable = renderable
             if isinstance(renderable, str):
@@ -159,13 +143,28 @@ class EnGlyphText( EnGlyph ):
                     self.renderable = Text.from_markup(renderable)
                 else:
                     self.renderable = Text(renderable)
+        return renderable
 
-    def _encache(self) -> None:
-        """A stub handler to flag as ready for glyph rendering"""
+    def _process(self) -> None:
+        """A stub handler for processing a renderable"""
         self.renderable.stylize_before( self.rich_style )
         self._renderable = self.renderable
-        cons_slate = Console().render_lines( self._renderable, pad=False )
-        self._slate_cache = self._enslate( cons_slate )
+
+    def _postprocess(self) -> None:
+        """A stub handler to cache a slate (list of strips) from _renderable"""
+        slate = Console().render_lines( self._renderable, pad=False )
+        slate_buf = []
+        if self.basis == (0,0):
+            slate_buf = [ Strip(strip) for strip in slate ]
+        else:
+            for strip in slate:
+                for seg in strip:
+                    pane = ToGlyxels.font_pane( seg.text, self._font_name, self._font_size )
+                    slate = ToGlyxels.pane2slate( pane, seg.style, self.basis, self.pips )
+                    slate_buf = ToGlyxels.slate_join( slate_buf, slate )
+        self._slate_cache = slate_buf
+        return
+
 
 class EnGlyphSlate( EnGlyph ):
     """Process a list of Strips (or a widget?)"""
@@ -179,7 +178,26 @@ class EnGlyphSlate( EnGlyph ):
 
 class EnGlyphImage( EnGlyph ):
     """Process a PIL image (or path to) into glyxels"""
-    def _enrender(self, renderable = None) -> None:
+    def __init__(self, *args,
+                 repeat:int=3,
+                 **kwargs ):
+        self._repeats_n = repeat
+        super().__init__( *args, **kwargs )
+
+
+    animate = reactive(False, init=False)
+
+    def on_mount(self) -> None:
+        if self.animate:
+            self.interval_update = self.set_interval( self._duration_s, self.advance_frame() ) 
+
+
+    def advance_frame(self) -> None:
+        if self.animate:
+            pass
+        return
+
+    def _preprocess(self, renderable = None) -> None:
         """A stub handler to pre-render an input for glyph processing"""
         if renderable is not None:
             im_buff = renderable
@@ -188,28 +206,29 @@ class EnGlyphImage( EnGlyph ):
                     im_data = fh.read()
                     im_buff = io.BytesIO( im_data )
             self.renderable = Image.open( im_buff )
-            self._n_frames = self._get_frame_count( self.renderable )
-            self.app.log( self._n_frames )
-            if self._n_frames:
-                self._n_repeats = 3
-                self._duration = self.renderable.info.get("duration", 100)
 
-    def _encache(self) -> None:
-        """A stub handler to flag as ready for glyph rendering"""
+    def _process(self ) -> None:
+        self._frames_n = self._get_frame_count( self.renderable )
+        if self._frames_n > 0:
+            self.animate = True
+            self._duration_s = self.renderable.info.get("duration", 100)/1000
         self._renderable = self.renderable
+
+    def _postprocess(self) -> None:
+        """A stub handler to cache a slate (list of strips) from _renderable"""
         frame = self._renderable
-        if self._n_frames > 1:
+        if self.animate:
             self._renderable.seek(29)
             frame = self._renderable.convert('RGB')
             frame = frame.reduce( 4 )
         self._slate_cache = ToGlyxels.image2slate( frame )
 
     def _get_frame_count( self, image ):
-        n_frames = 0
+        frames_n = 0
         while True:
             try:
-                image.seek(n_frames + 1)
-                n_frames += 1
+                image.seek(frames_n + 1)
+                frames_n += 1
             except EOFError:
                 break
-        return n_frames
+        return frames_n

@@ -9,5 +9,6 @@ class Test(App):
     def compose(self) -> ComposeResult:
         yield EnGlyphImage( "testing/twirl.gif" )
 
+# uv run testing/image_test.py
 if __name__ == "__main__":
     Test().run(inline=True, inline_no_clear=True)
