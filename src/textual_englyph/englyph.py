@@ -189,23 +189,30 @@ class EnGlyphImage( EnGlyph ):
 
     def on_mount(self) -> None:
         if self.animate:
-            self.interval_update = self.set_interval( self._duration_s, self.advance_frame() ) 
+            max_frames = self._repeats_n * self._frames_n
+            self.interval_update = self.set_interval(
+                    interval = self._duration_s,
+                    callback = self.next_frame(),
+                    repeat = max_frames
+                    ) 
 
 
-    def advance_frame(self) -> None:
+    def next_frame(self) -> None:
         if self.animate:
             pass
         return
 
     def _preprocess(self, renderable = None) -> None:
-        """A stub handler to pre-render an input for glyph processing"""
+        """A stub handler to pre-render an "image" input for glyph processing"""
         if renderable is not None:
             im_buff = renderable
             if isinstance( renderable, str ):
+                #Load PIL image from file path
                 with open( renderable, 'rb') as fh:
                     im_data = fh.read()
                     im_buff = io.BytesIO( im_data )
             self.renderable = Image.open( im_buff )
+        return renderable
 
     def _process(self ) -> None:
         self._frames_n = self._get_frame_count( self.renderable )
