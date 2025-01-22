@@ -192,15 +192,30 @@ class EnGlyphImage( EnGlyph ):
             max_frames = self._repeats_n * self._frames_n
             self.interval_update = self.set_interval(
                     interval = self._duration_s,
-                    callback = self.next_frame(),
+                    callback = self.next_frame,
                     repeat = max_frames
                     ) 
 
+    def previous_frame(self) -> None:
+        if self.animate:
+            current_frame = self._renderable.tell()
+            if current_frame - 1 >= 0:
+                self._renderable.seek( current_frame - 1 )
+            else:
+                self._renderable.seek( self._frames_n )
+                self._postprocess()
+                self.refresh(layout=True)
 
     def next_frame(self) -> None:
+        current_frame = self._renderable.tell()
+        self.app.log( current_frame )
         if self.animate:
-            pass
-        return
+            if current_frame + 1 < self._frames_n:
+                self._renderable.seek( current_frame + 1 )
+            else:
+                self._renderable.seek( 0 )
+            self._postprocess()
+            self.refresh(layout=True)
 
     def _preprocess(self, renderable = None) -> None:
         """A stub handler to pre-render an "image" input for glyph processing"""
@@ -225,17 +240,18 @@ class EnGlyphImage( EnGlyph ):
         """A stub handler to cache a slate (list of strips) from _renderable"""
         frame = self._renderable
         if self.animate:
-            self._renderable.seek(29)
             frame = self._renderable.convert('RGB')
             frame = frame.reduce( 4 )
         self._slate_cache = ToGlyxels.image2slate( frame )
 
     def _get_frame_count( self, image ):
         frames_n = 0
+        image.seek(0)
         while True:
             try:
                 image.seek(frames_n + 1)
                 frames_n += 1
             except EOFError:
                 break
+        image.seek(0)
         return frames_n
