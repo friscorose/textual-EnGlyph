@@ -33,7 +33,7 @@ class EnGlyph( Widget, inherit_bindings=False ):
 
     DEFAULT_CSS = """
     EnGlyph {
-        color: $primary;
+        color: $text;
         height: auto;
         width: auto;
     }
@@ -241,7 +241,7 @@ class EnGlyphImage( EnGlyph ):
         if self.animate:
             frame = self._renderable.convert('RGB')
             frame = frame.reduce( 4 )
-        self._slate_cache = ToGlyxels.image2slate( frame )
+        self._slate_cache = ToGlyxels.image2slate( frame, basis=self.basis, pips=self.pips )
 
     def _get_frame_count( self, image ):
         frames_n = 0
