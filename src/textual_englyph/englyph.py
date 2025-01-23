@@ -33,6 +33,7 @@ class EnGlyph( Widget, inherit_bindings=False ):
 
     DEFAULT_CSS = """
     EnGlyph {
+        color: $primary;
         height: auto;
         width: auto;
     }
@@ -48,7 +49,6 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self.basis = basis
         self.pips = pips
         self._process()
-        #self.rich_style is not settled yet, trigger regenerate _slate_cache later
         self._postprocess()
 
     def __add__( self, rhs ):
@@ -208,7 +208,6 @@ class EnGlyphImage( EnGlyph ):
 
     def next_frame(self) -> None:
         current_frame = self._renderable.tell()
-        self.app.log( current_frame )
         if self.animate:
             if current_frame + 1 < self._frames_n:
                 self._renderable.seek( current_frame + 1 )
