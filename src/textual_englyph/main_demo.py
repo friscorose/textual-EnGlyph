@@ -2,7 +2,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
 from textual.widgets import Header, Footer, Button, TextArea
-from textual_englyph import EnGlyph
+from textual_englyph import EnGlyphText
 
 # pylint: disable=R0801
 CONTENT = '''\

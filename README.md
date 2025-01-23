@@ -22,32 +22,28 @@ This widget library is available as a python PyPi library.
 This HowTo recommends `uv` to manage your python environment,
 see https://docs.astral.sh/uv/guides/ for using `uv`.
 
-Install and run the demo...
-```bash
-uv pip install textual-englyph
-englyph_demo
-```
-or, use as a module in your textual python app. Save the following simple example as `test.py`
+Run the default text use case...
+as a module in your textual python app. Save the following simple example as `test.py`
 ```python
 from textual.app import App, ComposeResult
-from textual_englyph import EnGlyph
+from textual_englyph import EnGlyphText
 
 class Test(App):
+    '''Test CSS and console markup styling the basic englyph text use case'''
     DEFAULT_CSS = """
-    EnGlyph {
+    EnGlyphText {
         color: green;
         text-style: underline;
         }
     """
-
     def compose(self) -> ComposeResult:
-        yield EnGlyph("Hello Textual!")
+        yield EnGlyphText("Hello [blue]Textual!")
 
 if __name__ == "__main__":
     app = Test()
     app.run()
 ```
-and run it (use ctrl-c to exit)
+and run it (use ctrl-q to exit)
 ```bash
-uv run test.py
+uv run --with textual --with textual_englyph test.py
 ```
