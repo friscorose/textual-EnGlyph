@@ -9,6 +9,7 @@ from rich.console import Console, RenderableType
 from rich.segment import Segment
 from rich.text import Text
 
+from textual.geometry import Size
 from textual.reactive import reactive
 from textual.strip import Strip
 from textual.widget import Widget
@@ -23,8 +24,7 @@ class EnGlyph( Widget, inherit_bindings=False ):
         renderable: Rich renderable or string to display
         basis:tuple[(2,4)], the (x,y) partitions of cell glyph pixels (glyxel | gx)
         pips:bool[False], show glyxels in reduced density
-        font_size:int[12], set height of font in glyxels, ie. 12pt -> 12gx
-        markup:bool[True], Rich Text inline console styling of string
+
         name:str, Standard Textual Widget argument
         id:str, Standard Textual Widget argument
         classes:str, Standard Textual Widget argument
@@ -39,17 +39,31 @@ class EnGlyph( Widget, inherit_bindings=False ):
     }
     """
 
+    _slate_cache = [Strip.blank(0)]
+
     def __init__(self, renderable,
                  *args, 
                  basis = (2,4),
                  pips = False,
                  **kwargs ):
         super().__init__( *args, **kwargs )
-        self._predicate = self._preprocess( renderable )
         self.basis = basis
         self.pips = pips
+        self._predicate = self._preprocess( renderable )
+
+    def on_mount( self ):
         self._process()
-        self._postprocess()
+
+    def get_content_width(self,
+                          container=None,
+                          viewport=None):
+        return self._slate_cache[0].cell_length
+
+    def get_content_height(self,
+                           container=None,
+                           viewport=None,
+                           width=None):
+        return len( self._slate_cache )
 
     def __add__( self, rhs ):
         """create the union of two EnGlyphed widgets """
@@ -89,17 +103,6 @@ class EnGlyph( Widget, inherit_bindings=False ):
         """A stub handler to cache a slate (list of strips) for rendering"""
         pass
 
-    def get_content_width(self,
-                          container=None,
-                          viewport=None):
-        return self._slate_cache[0].cell_length
-
-    def get_content_height(self,
-                           container=None,
-                           viewport=None,
-                           width=None):
-        return len( self._slate_cache )
-
     def update( self,
                renderable: RenderableType|None = None,
                basis: tuple|None = None,
@@ -110,21 +113,49 @@ class EnGlyph( Widget, inherit_bindings=False ):
         self.basis = basis or self.basis
         self.pips = pips or self.pips
         self._font_size = font_size or self._font_size
-        self._preprocess( renderable )
+        self._predicate = self._preprocess( renderable )
         self._process()
         self._postprocess()
         self.refresh(layout=True)
 
-    def on_mount( self ):
-        self._process()
-        self._postprocess()
-
     def render_line( self, y:int ) -> Strip:
+        self._postprocess()
         return self._slate_cache[y]
 
 class EnGlyphText( EnGlyph ):
-    """Process a textual renderable (including Rich.Text)"""
+    """
+    A Textual widget to show a variety of large text outputs.
+    Process a textual renderable (including Rich.Text)
+    Args:
+        renderable: Rich renderable or string to display
+        size:str["medium"], choose size configuration of font
+        basis:tuple[(2,4)], the (x,y) partitions of cell glyph pixels (glyxel | gx)
+        pips:bool[False], show glyxels in reduced density
+        font_name:str[TerminusTTF-4.46.0.ttf], set name/path for font shown in glyxels
+        font_size:int[12], set height of font in glyxels, ie. 12pt -> 12gx
+        markup:bool[True], Rich Text inline console styling of string
+        name:str, Standard Textual Widget argument
+        id:str, Standard Textual Widget argument
+        classes:str, Standard Textual Widget argument
+        disabled:bool, Standard Textual Widget argument
+    """
+
+    _size_config = {
+            "smaller":( -2, "", (0,0) ),
+            "larger":( +2, "", (0,0) ),
+
+            "xx-small":( 0, "", (0,0) ), #Unicode chars like ᵧ (0x1d67), not implimented
+            "x-small":( 1, "", (0,0) ), #What your terminal normally uses
+            "small":( 8, "AtariSmall.ttf", (2,4) ),
+            "medium":( 7, "casio-fx-9860gii.ttf", (2,4) ),
+            "large":(  7, "casio-fx-9860gii.ttf", (2,3) ),
+            "x-large":( 12, "TerminusTTF-4.46.0.ttf", (2,4) ),
+            "xx-large":( 14, "TerminusTTF-4.46.0.ttf", (2,4) ),
+            "xxx-large":( 16, "TerminusTTF-4.46.0.ttf", (2,4) ),
+            }
+
     def __init__(self, *args, 
+                 size: str = "x-small",
                  markup: bool = True,
                  font_name:str = "TerminusTTF-4.46.0.ttf",
                  font_size:int = 12,
@@ -165,6 +196,9 @@ class EnGlyphText( EnGlyph ):
         self._slate_cache = slate_buf
         return
 
+class EnGlyphDrawn( EnGlyph ):
+    pass
+
 
 class EnGlyphSlate( EnGlyph ):
     """Process a list of Strips (or a widget?)"""
@@ -178,6 +212,12 @@ class EnGlyphSlate( EnGlyph ):
 
 class EnGlyphImage( EnGlyph ):
     """Process a PIL image (or path to) into glyxels"""
+    DEFAULT_CSS="""
+    EnGlyphImage {
+        width: auto;
+        height: auto;
+    }
+    """
     def __init__(self, *args,
                  repeat:int=3,
                  **kwargs ):
@@ -185,39 +225,44 @@ class EnGlyphImage( EnGlyph ):
         super().__init__( *args, **kwargs )
 
 
-    animate = reactive(False, init=False)
+    animate = reactive(0, init=False)
+    rescale = None
 
-    def on_mount(self) -> None:
-        if self.animate:
-            max_frames = self._repeats_n * self._frames_n
-            self.interval_update = self.set_interval(
-                    interval = self._duration_s,
-                    callback = self.next_frame,
-                    repeat = max_frames
-                    ) 
+    def rescale_img( self, factor:float|Size, image ) -> None:
+        """Adjust the image by factor and round up to the next full cell size"""
+        if isinstance(factor, Size):
+            if not factor:
+                factor = self.app.size
+            dx = factor[0]%self.basis[0]
+            dy = factor[1]%self.basis[1]
+            factor = ( factor[0]+dx, factor[1]+dy )
+        if isinstance(factor, float):
+            x,y = self.renderable.size
+            x = int(factor*x) 
+            y = int(factor*y) 
+            dx = x%self.basis[0]
+            dy = y%self.basis[1]
+            factor = ( x+dx, y+dy )
+        return  image.resize( factor )
 
-    def previous_frame(self) -> None:
-        if self.animate:
-            current_frame = self._renderable.tell()
-            if current_frame - 1 >= 0:
-                self._renderable.seek( current_frame - 1 )
-            else:
-                self._renderable.seek( self._frames_n )
-                self._postprocess()
-                self.refresh(layout=True)
-
-    def next_frame(self) -> None:
+    def update_frame(self, image_frame = None) -> None:
+        """accept an image frame to show or move to the next image frame in a sequence"""
         current_frame = self._renderable.tell()
-        if self.animate:
-            if current_frame + 1 < self._frames_n:
-                self._renderable.seek( current_frame + 1 )
-            else:
-                self._renderable.seek( 0 )
-            self._postprocess()
-            self.refresh(layout=True)
+        if image_frame is not None:
+            frame = image_frame
+        else:
+            frame = self._renderable
+            if self.animate != 0:
+                next_frame = (current_frame + self.animate) % (self._frames_n + 1)
+                frame.seek( next_frame )
+                self._slate_cache = self._slate_dblcache
+                self.refresh(layout=True)
+                frame = frame.convert('RGB')
+                frame = frame.reduce( 4 )
+        self._slate_dblcache = ToGlyxels.image2slate( frame, basis=self.basis, pips=self.pips )
 
     def _preprocess(self, renderable = None) -> None:
-        """A stub handler to pre-render an "image" input for glyph processing"""
+        """A stub init handler to preset "image" properties for glyph processing"""
         if renderable is not None:
             im_buff = renderable
             if isinstance( renderable, str ):
@@ -226,22 +271,38 @@ class EnGlyphImage( EnGlyph ):
                     im_data = fh.read()
                     im_buff = io.BytesIO( im_data )
             self.renderable = Image.open( im_buff )
+        self._frames_n = self._get_frame_count( self.renderable )
+        frame = self.renderable.convert('RGB')
+        if self._frames_n > 0:
+            self.animate = 1
+            self._duration_s = self.renderable.info.get("duration", 100)/1000
+            frame = frame.reduce( 4 )
+        else:
+            self.animate = 0
+        #If these are different then reprocess from the predicate
+        self._slate_dblcache = ToGlyxels.image2slate( frame, basis=self.basis, pips=self.pips )
+        self._renderable = self.renderable
         return renderable
 
     def _process(self ) -> None:
-        self._frames_n = self._get_frame_count( self.renderable )
-        if self._frames_n > 0:
-            self.animate = True
-            self._duration_s = self.renderable.info.get("duration", 100)/1000
-        self._renderable = self.renderable
+        """A stub on_mount (DOM ready) handler for "image" glyph processing"""
+        if self._renderable != self.renderable:
+            self._preprocess( self._predicate )
+        if self.animate != 0:
+            max_frames = self._repeats_n * (self._frames_n + 1)
+            self.interval_update = self.set_interval(
+                    interval = self._duration_s,
+                    callback = self.update_frame,
+                    repeat = max_frames
+                    ) 
 
     def _postprocess(self) -> None:
         """A stub handler to cache a slate (list of strips) from _renderable"""
-        frame = self._renderable
-        if self.animate:
-            frame = self._renderable.convert('RGB')
-            frame = frame.reduce( 4 )
-        self._slate_cache = ToGlyxels.image2slate( frame, basis=self.basis, pips=self.pips )
+        #raise AttributeError( self.styles )
+        #raise AttributeError( self.size )
+#        frame = self.rescale( self.size, frame )
+#        frame = self.rescale( 1/4, frame )
+        #self.refresh(layout=True)
 
     def _get_frame_count( self, image ):
         frames_n = 0
