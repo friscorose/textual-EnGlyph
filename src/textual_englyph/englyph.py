@@ -1,6 +1,6 @@
 '''Create large text output module for Textual with custom widget EnGlyph'''
 
-from PIL import Image
+from PIL import Image, ImageOps
 import io
 import os
 from typing import List
@@ -214,8 +214,7 @@ class EnGlyphImage( EnGlyph ):
     """Process a PIL image (or path to) into glyxels"""
     DEFAULT_CSS="""
     EnGlyphImage {
-        width: auto;
-        height: auto;
+        max-height: 24;
     }
     """
     def __init__(self, *args,
@@ -226,27 +225,30 @@ class EnGlyphImage( EnGlyph ):
 
 
     animate = reactive(0, init=False)
-    rescale = None
+    #Set to None to accept default image height upto 24 cells, otherwise set to aspect ratio
+    enscale = None
 
-    def rescale_img( self, factor:float|Size, image ) -> None:
-        """Adjust the image by factor and round up to the next full cell size"""
-        if isinstance(factor, Size):
-            if not factor:
-                factor = self.app.size
-            dx = factor[0]%self.basis[0]
-            dy = factor[1]%self.basis[1]
-            factor = ( factor[0]+dx, factor[1]+dy )
-        if isinstance(factor, float):
-            x,y = self.renderable.size
-            x = int(factor*x) 
-            y = int(factor*y) 
-            dx = x%self.basis[0]
-            dy = y%self.basis[1]
-            factor = ( x+dx, y+dy )
-        return  image.resize( factor )
+    def _rescale_img( self, img ) -> None:
+        """Adjust the image by factor and to nearest full cell size and nearest aspect ratio"""
+        ImgSize = Size( *img.size )
+        if self.parent is None:
+            _cell_width = self.app.size.width
+        else:
+            _cell_width = self.parent.size.width
+        if self.styles.max_height is None:
+            _cell_height = 32
+        else:
+            _cell_height = self.styles.max_height.cells
+        bbox_x = self.basis[0] * _cell_width
+        bbox_y = self.basis[1] * _cell_height
+        im_size = (bbox_x, bbox_y)
+        #raise AttributeError( im_size )
+        return ImageOps.contain( img, im_size )
 
     def update_frame(self, image_frame = None) -> None:
         """accept an image frame to show or move to the next image frame in a sequence"""
+        #raise AttributeError( self.size )
+        #raise AttributeError( self.styles )
         current_frame = self._renderable.tell()
         if image_frame is not None:
             frame = image_frame
@@ -257,8 +259,8 @@ class EnGlyphImage( EnGlyph ):
                 frame.seek( next_frame )
                 self._slate_cache = self._slate_dblcache
                 self.refresh(layout=True)
-                frame = frame.convert('RGB')
-                frame = frame.reduce( 4 )
+                frame = self._rescale_img( frame.convert('RGB') )
+                #frame = frame.reduce( 4 )
         self._slate_dblcache = ToGlyxels.image2slate( frame, basis=self.basis, pips=self.pips )
 
     def _preprocess(self, renderable = None) -> None:
@@ -276,16 +278,20 @@ class EnGlyphImage( EnGlyph ):
         if self._frames_n > 0:
             self.animate = 1
             self._duration_s = self.renderable.info.get("duration", 100)/1000
-            frame = frame.reduce( 4 )
+            frame = self._rescale_img( frame.convert('RGB') )
+            #frame = frame.reduce( 4 )
         else:
             self.animate = 0
-        #If these are different then reprocess from the predicate
         self._slate_dblcache = ToGlyxels.image2slate( frame, basis=self.basis, pips=self.pips )
+        self._slate_cache = self._slate_dblcache
+        #If these are different then reprocess from the predicate
         self._renderable = self.renderable
         return renderable
 
     def _process(self ) -> None:
         """A stub on_mount (DOM ready) handler for "image" glyph processing"""
+        #raise AttributeError( self.styles )
+        #If these are different then reprocess from the predicate
         if self._renderable != self.renderable:
             self._preprocess( self._predicate )
         if self.animate != 0:
@@ -299,7 +305,7 @@ class EnGlyphImage( EnGlyph ):
     def _postprocess(self) -> None:
         """A stub handler to cache a slate (list of strips) from _renderable"""
         #raise AttributeError( self.styles )
-        #raise AttributeError( self.size )
+#        raise AttributeError( self.size )
 #        frame = self.rescale( self.size, frame )
 #        frame = self.rescale( 1/4, frame )
         #self.refresh(layout=True)
