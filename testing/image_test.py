@@ -6,10 +6,9 @@ class Test(App):
     '''Test the basic englyph image use case'''
     DEFAULT_CSS ="""
     Screen {
-        color: blue;
+        background: blue;
     }
     #I {
-        background: blue;
         max-height: 12;
     }
     #T {
