@@ -1,4 +1,5 @@
 '''Boilerplate code for testing purposes'''
+#import pyinstrument
 from textual.app import App, ComposeResult
 from textual_englyph import EnGlyphText, EnGlyphImage
 
@@ -21,9 +22,10 @@ class Test(App):
         #yield EnGlyphImage( "testing/hopper.jpg" )
         #yield EnGlyphText( "'Grace' hopper.jpg" )
         yield EnGlyphImage( "testing/twirl.gif", id="I" )
-        yield EnGlyphText( "The coup de grâce", id="T", font_size=7, font_name="casio-fx-9860gii.ttf", basis=(2,4) )
+        yield EnGlyphText( "Coup de Grâce", id="T", font_size=7, font_name="casio-fx-9860gii.ttf", basis=(2,4) )
 
 # uv run testing/image_test.py
 if __name__ == "__main__":
-    Test().run()
+    #with pyinstrument.profile():
+        Test().run()
     #Test().run(inline=True, inline_no_clear=True)

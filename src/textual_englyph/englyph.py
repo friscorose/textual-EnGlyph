@@ -66,7 +66,8 @@ class EnGlyph( Widget, inherit_bindings=False ):
 
     def __add__( self, rhs ):
         """create the union of two EnGlyphed widgets """
-        return self._union( self, rhs )
+        #return self._union( self, rhs )
+        pass
 
     __radd__ = __add__
 
@@ -81,6 +82,13 @@ class EnGlyph( Widget, inherit_bindings=False ):
     def __div__( self, rhs ):
         """create the intersection of two EnGlyphed widgets """
         return self._disection( self, rhs )
+
+    def _union( self, rhs ):
+        for idy, strip in enumerate( rhs._slate ):
+            for idx, seg in enumerate( strip ):
+                pass
+                
+
 
     def _intersection( self, rhs ):
         if isinstance( rhs, float ):
@@ -127,8 +135,7 @@ class EnGlyphText( EnGlyph ):
     Process a textual renderable (including Rich.Text)
     Args:
         renderable: Rich renderable or string to display
-        size:str["medium"], choose size configuration of font
-        basis:tuple[(2,4)], the (x,y) partitions of cell glyph pixels (glyxel | gx)
+        text_size:str["medium"], choose size configuration of font
         pips:bool[False], show glyxels in reduced density
         font_name:str[TerminusTTF-4.46.0.ttf], set name/path for font shown in glyxels
         font_size:int[12], set height of font in glyxels, ie. 12pt -> 12gx
@@ -139,13 +146,13 @@ class EnGlyphText( EnGlyph ):
         disabled:bool, Standard Textual Widget argument
     """
 
-    _size_config = {
+    _text_config = {
             "smaller":( -2, "", (0,0) ),
             "larger":( +2, "", (0,0) ),
 
             "xx-small":( 0, "", (0,0) ), #Unicode chars like ᵧ (0x1d67), not implimented
             "x-small":( 1, "", (0,0) ), #What your terminal normally uses
-            "small":( 8, "AtariSmall.ttf", (2,4) ),
+            "small":( 8, "miniwi.ttf", (2,4) ),
             "medium":( 7, "casio-fx-9860gii.ttf", (2,4) ),
             "large":(  7, "casio-fx-9860gii.ttf", (2,3) ),
             "x-large":( 12, "TerminusTTF-4.46.0.ttf", (2,4) ),
@@ -154,15 +161,23 @@ class EnGlyphText( EnGlyph ):
             }
 
     def __init__(self, *args, 
-                 size: str = "x-small",
+                 text_size: str = "x-small",
                  markup: bool = True,
-                 font_name:str = "TerminusTTF-4.46.0.ttf",
-                 font_size:int = 12,
+                 font_name:str|None = None,
+                 font_size:int|None = None,
+                 basis:tuple|None = None,
                  **kwargs ):
         self.markup = markup
         self._font_name = font_name
         self._font_size = font_size
-        super().__init__( *args, **kwargs )
+        super().__init__( *args, basis=(0,0), **kwargs )
+        self._configure_text( text_size )
+
+    def _configure_text( self, size ) -> None:
+        self._font_size = self._font_size or self._text_config[size][0]
+        self._font_name = self._font_name or self._text_config[size][1]
+        if self.basis == (0,0):
+            self.basis = self._text_config[size][2]
 
     def _preprocess(self, renderable: RenderableType|None = None):
         """A stub handler for processing the input _predicate to the renderable"""
@@ -191,6 +206,7 @@ class EnGlyphText( EnGlyph ):
                     pane = ToGlyxels.font_pane( seg.text, self._font_name, self._font_size )
                     slate = ToGlyxels.pane2slate( pane, seg.style, self.basis, self.pips )
                     slate_buf = ToGlyxels.slate_join( slate_buf, slate )
+        #raise AttributeError( "" )
         self._slate = slate_buf
         return
 
@@ -232,7 +248,6 @@ class EnGlyphImage( EnGlyph ):
         bbox_x = self.basis[0] * cell_width
         bbox_y = self.basis[1] * cell_height
         im_size = (bbox_x, bbox_y)
-        #raise AttributeError( im_size )
         return ImageOps.contain( img, im_size )
 
     def _update_frame(self, image_frame = None) -> None:

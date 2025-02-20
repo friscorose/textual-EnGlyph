@@ -177,5 +177,6 @@ class ToGlyxels():
         font_asset = resources.files().joinpath( "assets", font_name )
         font = ImageFont.truetype( font_asset, size=font_size )
         _,_,r,b = font.getbbox( phrase )
+        #raise AttributeError( r, b )
         mask = list( font.getmask(phrase, mode='1') )
         return (r,b,mask)
