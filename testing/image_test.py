@@ -10,7 +10,7 @@ class Test(App):
         background: blue;
     }
     #I {
-        max-height: 12;
+        max-height: 16;
     }
     #T {
         background: white 50%;
@@ -19,10 +19,10 @@ class Test(App):
     }
     """
     def compose(self) -> ComposeResult:
-        #yield EnGlyphImage( "testing/hopper.jpg" )
-        #yield EnGlyphText( "'Grace' hopper.jpg" )
-        yield EnGlyphImage( "testing/twirl.gif", id="I" )
-        yield EnGlyphText( "Coup de Grâce", id="T", font_size=7, font_name="casio-fx-9860gii.ttf", basis=(2,4) )
+        yield EnGlyphImage( "testing/hopper.jpg", id="I" )
+        yield EnGlyphText( "'Grace' hopper.jpg", id="T" )
+        #yield EnGlyphImage( "testing/twirl.gif", id="I" )
+        #yield EnGlyphText( "Coup de Grâce", id="T", font_size=7, font_name="casio-fx-9860gii.ttf", basis=(2,4) )
 
 # uv run testing/image_test.py
 if __name__ == "__main__":
