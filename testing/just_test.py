@@ -3,7 +3,7 @@ from textual.app import App, ComposeResult
 from textual_englyph import EnGlyphText
 
 class Test(App):
-    '''Test CSS and console markup styling the basic englyph use case'''
+    '''Test console markup styling the englyph text use case'''
     def compose(self) -> ComposeResult:
         yield EnGlyphText( "Hello [red]Textual!", text_size="x-small" )
         yield EnGlyphText( "Bonjour [dark_orange]Textual!", text_size="small" )
