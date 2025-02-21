@@ -1,15 +1,9 @@
 '''Create large text output module for Textual with custom widget EnGlyph'''
 
-from PIL import Image, ImageOps
-import io
-import os
-from typing import List
 
 from rich.console import Console, RenderableType
-from rich.segment import Segment
 from rich.text import Text
 
-from textual.geometry import Size
 from textual.strip import Strip
 
 from .englyph import EnGlyph

@@ -2,15 +2,8 @@
 
 from PIL import Image, ImageOps
 import io
-import os
 
-from rich.console import Console, RenderableType
-from rich.segment import Segment
-from rich.text import Text
 
-from textual.geometry import Size
-from textual.strip import Strip
-from textual.widget import Widget
 
 from .englyph import EnGlyph
 from .toglyxels import ToGlyxels
@@ -33,7 +26,6 @@ class EnGlyphImage( EnGlyph ):
 
     def _rescale_img( self, img ) -> None:
         """Adjust the image by factor and to nearest full cell size and nearest aspect ratio"""
-        ImgSize = Size( *img.size )
         cell_width = self.parent.size.width or self.app.size.width
         cell_height = self.styles.max_height.cells
         bbox_x = self.basis[0] * cell_width
