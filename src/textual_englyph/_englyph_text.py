@@ -1,5 +1,4 @@
-'''Create large text output module for Textual with custom widget EnGlyph'''
-
+"""Create large text output module for Textual with custom widget EnGlyph"""
 
 from rich.console import Console, RenderableType
 from rich.text import Text
@@ -9,7 +8,8 @@ from textual.strip import Strip
 from .englyph import EnGlyph
 from .toglyxels import ToGlyxels
 
-class EnGlyphText( EnGlyph ):
+
+class EnGlyphText(EnGlyph):
     """
     A Textual widget to show a variety of large text outputs.
     Process a textual renderable (including Rich.Text)
@@ -27,39 +27,41 @@ class EnGlyphText( EnGlyph ):
     """
 
     _text_config = {
-            "smaller":( -2, "", (0,0) ),
-            "larger":( +2, "", (0,0) ),
+        "smaller": (-2, "", (0, 0)),
+        "larger": (+2, "", (0, 0)),
+        "xx-small": (0, "", (0, 0)),  # Unicode chars like ᵧ (0x1d67), not implimented
+        "x-small": (1, "", (0, 0)),  # What your terminal normally uses
+        "small": (8, "miniwi.ttf", (2, 4)),
+        "medium": (7, "casio-fx-9860gii.ttf", (2, 4)),
+        "large": (7, "casio-fx-9860gii.ttf", (2, 3)),
+        "x-large": (12, "TerminusTTF-4.46.0.ttf", (2, 4)),
+        "xx-large": (14, "TerminusTTF-4.46.0.ttf", (2, 4)),
+        "xxx-large": (16, "TerminusTTF-4.46.0.ttf", (2, 4)),
+    }
 
-            "xx-small":( 0, "", (0,0) ), #Unicode chars like ᵧ (0x1d67), not implimented
-            "x-small":( 1, "", (0,0) ), #What your terminal normally uses
-            "small":( 8, "miniwi.ttf", (2,4) ),
-            "medium":( 7, "casio-fx-9860gii.ttf", (2,4) ),
-            "large":(  7, "casio-fx-9860gii.ttf", (2,3) ),
-            "x-large":( 12, "TerminusTTF-4.46.0.ttf", (2,4) ),
-            "xx-large":( 14, "TerminusTTF-4.46.0.ttf", (2,4) ),
-            "xxx-large":( 16, "TerminusTTF-4.46.0.ttf", (2,4) ),
-            }
-
-    def __init__(self, *args, 
-                 text_size: str = "x-small",
-                 markup: bool = True,
-                 font_name:str|None = None,
-                 font_size:int|None = None,
-                 basis:tuple|None = None,
-                 **kwargs ):
+    def __init__(
+        self,
+        *args,
+        text_size: str = "x-small",
+        markup: bool = True,
+        font_name: str | None = None,
+        font_size: int | None = None,
+        basis: tuple | None = None,
+        **kwargs,
+    ):
         self.markup = markup
         self._font_name = font_name
         self._font_size = font_size
-        super().__init__( *args, basis=(0,0), **kwargs )
-        self._configure_text( text_size )
+        super().__init__(*args, basis=(0, 0), **kwargs)
+        self._configure_text(text_size)
 
-    def _configure_text( self, size ) -> None:
+    def _configure_text(self, size) -> None:
         self._font_size = self._font_size or self._text_config[size][0]
         self._font_name = self._font_name or self._text_config[size][1]
-        if self.basis == (0,0):
+        if self.basis == (0, 0):
             self.basis = self._text_config[size][2]
 
-    def _preprocess(self, renderable: RenderableType|None = None):
+    def _preprocess(self, renderable: RenderableType | None = None):
         """A stub handler for processing the input _predicate to the renderable"""
         if renderable is not None:
             self._renderable = renderable
@@ -72,20 +74,22 @@ class EnGlyphText( EnGlyph ):
 
     def _process(self) -> None:
         """A stub handler for processing a renderable"""
-        self._renderable.stylize_before( self.rich_style )
+        self._renderable.stylize_before(self.rich_style)
 
     def _postprocess(self) -> None:
         """A stub handler to cache a slate (list of strips) from renderable"""
-        slate = Console().render_lines( self._renderable, pad=False )
+        slate = Console().render_lines(self._renderable, pad=False)
         slate_buf = []
-        if self.basis == (0,0):
-            slate_buf = [ Strip(strip) for strip in slate ]
+        if self.basis == (0, 0):
+            slate_buf = [Strip(strip) for strip in slate]
         else:
             for strip in slate:
                 for seg in strip:
-                    pane = ToGlyxels.font_pane( seg.text, self._font_name, self._font_size )
-                    slate = ToGlyxels.pane2slate( pane, seg.style, self.basis, self.pips )
-                    slate_buf = ToGlyxels.slate_join( slate_buf, slate )
-        #raise AttributeError( "" )
+                    pane = ToGlyxels.font_pane(
+                        seg.text, self._font_name, self._font_size
+                    )
+                    slate = ToGlyxels.pane2slate(pane, seg.style, self.basis, self.pips)
+                    slate_buf = ToGlyxels.slate_join(slate_buf, slate)
+        # raise AttributeError( "" )
         self._slate = slate_buf
         return
