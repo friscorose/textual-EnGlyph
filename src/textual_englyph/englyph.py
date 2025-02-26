@@ -5,7 +5,6 @@ from rich.console import RenderableType
 from textual.strip import Strip
 from textual.widget import Widget
 
-
 class EnGlyph(Widget, inherit_bindings=False):
     """
     Textual widget to show a variety of large text outputs.
@@ -30,6 +29,7 @@ class EnGlyph(Widget, inherit_bindings=False):
     """
 
     _slate = _slate_cache = [Strip.blank(0)]
+    _pane = None
 
     def __init__(self, renderable, *args, basis=(2, 4), pips=False, **kwargs):
         super().__init__(*args, **kwargs)

@@ -10,14 +10,37 @@ from PIL import Image, ImageFont
 from textual.strip import Strip
 from rich.segment import Segment
 from rich.style import Style
-from rich.traceback import install
+#from rich.traceback import install
 
-install()
+#install()
 # raise ValueError("My message")
 
+def EnLoad( maybe_path ):
+    """
+    A function to load file data into memory from a path and return that refernce.
+    """
+    import io
+
+    if isinstance(maybe_path, str):
+        with open(maybe_path, "rb") as fh:
+            im_data = fh.read()
+            im_buff = io.BytesIO(im_data)
+            maybe_path = Image.open(im_buff)
+    return maybe_path
 
 class ToGlyxels:
     """Glyph pixels to enable user specified font based string rendering via PIL"""
+
+    @staticmethod
+    def font_pane(phrase, font_name, font_size):
+        font_asset = resources.files().joinpath("assets", font_name)
+        if not font_asset.is_file():
+            raise AttributeError( font_asset )
+        font = ImageFont.truetype(font_asset, size=font_size)
+        _, _, r, b = font.getbbox(phrase)
+        # raise AttributeError( r, b )
+        mask = list(font.getmask(phrase, mode="1"))
+        return (r, b, mask)
 
     # full infill glyxel(glyph pixel) look up table, columns x rows
     full_glut = [[], ["", "", ""], ["", "", "", "", ""]]
@@ -174,12 +197,3 @@ class ToGlyxels:
         for idx, line in enumerate(strips):
             joint.append(Strip.join((line, slate[idx])).simplify())
         return joint
-
-    @staticmethod
-    def font_pane(phrase, font_name, font_size):
-        font_asset = resources.files().joinpath("assets", font_name)
-        font = ImageFont.truetype(font_asset, size=font_size)
-        _, _, r, b = font.getbbox(phrase)
-        # raise AttributeError( r, b )
-        mask = list(font.getmask(phrase, mode="1"))
-        return (r, b, mask)

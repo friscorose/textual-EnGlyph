@@ -26,7 +26,7 @@ class EnGlyphText(EnGlyph):
         disabled:bool, Standard Textual Widget argument
     """
 
-    _text_config = {
+    _config = {
         "smaller": (-2, "", (0, 0)),
         "larger": (+2, "", (0, 0)),
         "xx-small": (0, "", (0, 0)),  # Unicode chars like ᵧ (0x1d67), not implimented
@@ -42,24 +42,24 @@ class EnGlyphText(EnGlyph):
     def __init__(
         self,
         *args,
-        text_size: str = "x-small",
+        text_size: str|None = "x-small",
+        font_name: str|None = None,
+        font_size: int|None = None,
+        basis: tuple|None = None,
         markup: bool = True,
-        font_name: str | None = None,
-        font_size: int | None = None,
-        basis: tuple | None = None,
         **kwargs,
     ):
+        if font_name is not None:
+            basis = basis or (2,4)
+        else:
+            basis = basis or self._config[text_size][2]
+        self._font_size = font_size or self._config[text_size][0]
+        self._font_name = font_name or self._config[text_size][1]
         self.markup = markup
-        self._font_name = font_name
-        self._font_size = font_size
-        super().__init__(*args, basis=(0, 0), **kwargs)
-        self._configure_text(text_size)
-
-    def _configure_text(self, size) -> None:
-        self._font_size = self._font_size or self._text_config[size][0]
-        self._font_name = self._font_name or self._text_config[size][1]
-        if self.basis == (0, 0):
-            self.basis = self._text_config[size][2]
+        super().__init__(
+                *args,
+                basis=basis,
+                **kwargs)
 
     def _preprocess(self, renderable: RenderableType | None = None):
         """A stub handler for processing the input _predicate to the renderable"""

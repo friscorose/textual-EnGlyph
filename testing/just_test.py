@@ -8,6 +8,7 @@ class Test(App):
     """Test console markup styling the englyph text use case"""
 
     def compose(self) -> ComposeResult:
+        yield EnGlyphText("Hello [red]Textual!", font_name="/tmp/BirchLeaf.ttf", font_size=24)
         yield EnGlyphText("Hello [red]Textual!", text_size="x-small")
         yield EnGlyphText("Bonjour [dark_orange]Textual!", text_size="small")
         yield EnGlyphText("Olá [bright_yellow]Textual!", text_size="medium")

@@ -1,11 +1,9 @@
 """Create large text output module for Textual with custom widget EnGlyph"""
 
-from PIL import Image, ImageOps
-import io
-
+from PIL import ImageOps
 
 from .englyph import EnGlyph
-from .toglyxels import ToGlyxels
+from .toglyxels import ToGlyxels, EnLoad
 
 
 class EnGlyphImage(EnGlyph):
@@ -61,13 +59,7 @@ class EnGlyphImage(EnGlyph):
     def _preprocess(self, renderable=None) -> None:
         """A stub init handler to preset "image" properties for glyph processing"""
         if renderable is not None:
-            im_buff = renderable
-            if isinstance(renderable, str):
-                # Load PIL image from file path
-                with open(renderable, "rb") as fh:
-                    im_data = fh.read()
-                    im_buff = io.BytesIO(im_data)
-            self._renderable = Image.open(im_buff)
+            self._renderable = EnLoad( renderable )
         self._frames_n = self._get_frame_count(self._renderable)
         if self._frames_n > 0:
             self.animate = 1
