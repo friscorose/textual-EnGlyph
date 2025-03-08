@@ -23,8 +23,8 @@ class EnGlyphImage(EnGlyph):
 
     def _rescale_img(self, img) -> None:
         """Adjust the image by factor and to nearest full cell size and nearest aspect ratio"""
-        cell_width = self.parent.size.width or self.app.size.width
-        cell_height = self.styles.max_height.cells
+        cell_width = self.styles.width.cells or self.parent.size.width or self.app.size.width
+        cell_height = self.styles.height.cells or self.styles.max_height.cells
         bbox_x = self.basis[0] * cell_width
         bbox_y = self.basis[1] * cell_height
         im_size = (bbox_x, bbox_y)
