@@ -1,4 +1,5 @@
-'''Boilerplate code for demo'''
+"""Boilerplate code for demo"""
+
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
 from textual.widgets import Header, Footer, Button, TextArea
@@ -25,8 +26,10 @@ if __name__ == "__main__":
     app.run()
 '''
 
+
 class MainDemo(App):
-    '''Test CSS and console markup styling the basic englyph use case'''
+    """Test CSS and console markup styling the basic englyph use case"""
+
     TITLE = "EnGlyph_Demo"
     DEFAULT_CSS = """
     TextArea {
@@ -52,17 +55,19 @@ class MainDemo(App):
         yield Footer()
         with Vertical():
             with Horizontal(id="choice"):
-                yield Button( str(EnGlyph("PREV")) )
+                yield Button(str(EnGlyph("PREV")))
                 yield EnGlyph("Examples")
-                yield Button( str(EnGlyph("NEXT")) )
+                yield Button(str(EnGlyph("NEXT")))
             with Horizontal():
                 yield self.code
                 yield EnGlyph("EnGlyph [blue]Textual!")
 
+
 def main_demo():
-    '''main_demo runner method'''
+    """main_demo runner method"""
     app = MainDemo()
     app.run()
+
 
 if __name__ == "__main__":
     main_demo()

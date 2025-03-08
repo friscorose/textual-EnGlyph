@@ -1,7 +1,7 @@
 [project]
 name = "textual-englyph"
-version = "0.4.1"
-description = "A Textual utility/widget to generate terminal images and styled, scalable text."
+version = "0.5.0"
+description = "A Textual utility widget set to generate terminal images and styled, scalable text."
 readme = "README.md"
 license = {text = "MIT License"}
 requires-python = ">=3.9"
