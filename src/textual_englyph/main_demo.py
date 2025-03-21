@@ -3,7 +3,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
 from textual.widgets import Header, Footer, Button, TextArea
-from textual_englyph import EnGlyph
+from textual_englyph import EnGlyphText
 
 # pylint: disable=R0801
 CONTENT = '''\
@@ -19,7 +19,7 @@ class Test(App):
     """
 
     def compose(self) -> ComposeResult:
-        yield EnGlyph("EnGlyph [blue]Textual!")
+        yield EnGlyphText("EnGlyph [blue]Textual!")
 
 if __name__ == "__main__":
     app = Test()
@@ -55,12 +55,12 @@ class MainDemo(App):
         yield Footer()
         with Vertical():
             with Horizontal(id="choice"):
-                yield Button(str(EnGlyph("PREV")))
-                yield EnGlyph("Examples")
-                yield Button(str(EnGlyph("NEXT")))
+                yield Button(str(EnGlyphText("PREV")))
+                yield EnGlyphText("Examples")
+                yield Button(str(EnGlyphText("NEXT")))
             with Horizontal():
                 yield self.code
-                yield EnGlyph("EnGlyph [blue]Textual!")
+                yield EnGlyphText("EnGlyph [blue]Textual!")
 
 
 def main_demo():
