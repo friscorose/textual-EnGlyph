@@ -7,7 +7,17 @@ from .toglyxels import ToGlyxels, EnLoad
 
 
 class EnGlyphImage(EnGlyph):
-    """Process a PIL image (or path to) into glyxels"""
+    """A Textual widget to process a PIL image (or path to) into glyxels.
+        Args:
+            renderable (PIL Image | path str): The image to be displayed.
+            basis (tuple int,int): Glyph pixel (glyxel) partitions in x then y.
+            pips (Bool): Are glyxels partition filling or not.
+            repeat (int): Number of times an animated image loops.
+            Standard Textual Widget Args.
+            
+        Returns:
+            Textual Widget Instance.
+    """
 
     DEFAULT_CSS = """
     EnGlyphImage {
@@ -28,6 +38,8 @@ class EnGlyphImage(EnGlyph):
             cell_width = self.styles.width.cells
             if cell_width is not None:
                 use_width = True
+            else:
+                cell_width = self.styles.max_width.cells 
         except:
             pass
 
@@ -38,7 +50,7 @@ class EnGlyphImage(EnGlyph):
         except:
             pass
 
-        cell_width = cell_width or self.styles.max_width.cells or self.parent.size.width or self.app.size.width
+        cell_width = cell_width or self.parent.size.width or self.app.size.width
         cell_height = cell_height or self.styles.max_height.cells
 
         im_size = (self.basis[0] * cell_width, self.basis[1] * cell_height)

@@ -108,4 +108,7 @@ class EnGlyph(Widget, inherit_bindings=False):
 
     def render_line(self, y: int) -> Strip:
         self._postprocess()
-        return self._slate[y]
+        strip = Strip.blank(0)
+        if y < self.get_content_height():
+            strip = self._slate[y]
+        return strip

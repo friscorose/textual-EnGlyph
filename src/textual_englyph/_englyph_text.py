@@ -27,8 +27,7 @@ class EnGlyphText(EnGlyph):
     """
 
     _config = {
-        "smaller": (-2, "", (0, 0)),
-        "larger": (+2, "", (0, 0)),
+        "smaller": (-2, "", (0, 0)), # for dynamic update of relative text_size
         "xx-small": (0, "", (0, 0)),  # Unicode chars like ᵧ (0x1d67), not implimented
         "x-small": (1, "", (0, 0)),  # What your terminal normally uses
         "small": (8, "miniwi.ttf", (2, 4)),
@@ -36,7 +35,8 @@ class EnGlyphText(EnGlyph):
         "large": (7, "casio-fx-9860gii.ttf", (2, 3)),
         "x-large": (12, "TerminusTTF-4.46.0.ttf", (2, 4)),
         "xx-large": (14, "TerminusTTF-4.46.0.ttf", (2, 4)),
-        "xxx-large": (16, "TerminusTTF-4.46.0.ttf", (2, 4)),
+        "xxx-large": (18, "TerminusTTF-4.46.0.ttf", (2, 4)),
+        "larger": (+2, "", (0, 0)), # for dynamic update of relative text_size
     }
 
     def __init__(
@@ -70,6 +70,8 @@ class EnGlyphText(EnGlyph):
                     self._renderable = Text.from_markup(renderable)
                 else:
                     self._renderable = Text(renderable)
+        else:
+            renderable = self._predicate
         return renderable
 
     def _process(self) -> None:

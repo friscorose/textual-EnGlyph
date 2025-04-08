@@ -13,7 +13,7 @@ class Test(App):
         background: blue;
     }
     #I {
-        width: 16;
+        height: 16;
     }
     #T {
         background: white 50%;
