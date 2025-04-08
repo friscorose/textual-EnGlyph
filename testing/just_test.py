@@ -17,4 +17,4 @@ class Test(App):
         yield EnGlyphText("Dobrý deň [violet]Textual!", text_size="xxx-large")
 
 if __name__ == "__main__":
-    Test().run(inline=True, inline_no_clear=True)
+    Test().run()
