@@ -39,17 +39,40 @@ if __name__ == "__main__":
 ```
 
 There are a few predefined sizes. The "x-xmall" size is the basline size of
-standard terminal text. From there character glyphs are built from pixels
-represented by a glyph block chopped up into dot that is named a glyxel in this
-document. This dependency on Unicode version 16 glyphs means that the terminal
-native font must be quite recent and your platform must support the Pillow
-module. 
+standard terminal text. From there the characters are built from glyphs of a
+cell partitioned into pixel like parts, called a glyxel in this document. The
+default cell glyxels are 2 columns by 4 rows, but other partitions are
+supported as well. This dependency on Unicode version 16 glyphs means that the
+terminal native font must be quite recent to enable all partioning glyphs used.
+Further, your platform must support the Pillow module to handle image and
+bitmap font interpretation. 
+
+It is also possible to use open fonts of your choice. Bitmap fonts are
+recommended unless you are wanting to display very large text. Some fun choices
+can be obtained from:
+
+https://www.nerdfonts.com/font-downloads
+https://www.dafont.com/bitmap.php
+
+Use of your chosen font is made possible by following this example:
+```python
+from textual.app import App, ComposeResult
+from textual_englyph import EnGlyphText
 
 
+class Test(App):
+    """Test console markup styling the englyph text use case"""
+
+    def compose(self) -> ComposeResult:
+        yield EnGlyphText("From EnGlyph, Hello [violet]Textual!", font_name="/tmp/Gohu/GohuFontuni11NerdFont-Regular.ttf", font_size=11)
+
+if __name__ == "__main__":
+    Test().run(inline=True, inline_no_clear=True)
+```
 ## EnGlyphImage based scalable text
 
-To generate an image with the EnGlyph tool use the textual_englyph module. To get to to the point
-quicly let's just drop a simple but fully functional code example.
+To generate an image with EnGlyph use the EnGlyphImage widget. To get to the
+point quickly here is a simple code example.
 
 ```python
 from textual.app import App, ComposeResult
@@ -78,7 +101,6 @@ max attribnutes can be used to clip the image. The image types supported are
 those supported by the Pillow module. The default glyxels used to build the
 image in your terminal are 2x4 dots per cell, but a cell can only support 2
 colors so the image is a nearest two color representation for the space coverd
-by a given cell. This dependency on Unicode version 16 glyphs means that the
-terminal native font must be quite recent and your platform must support the
-Pillow module. 
+by a given cell. If you need fully acurate colors then passing the attribute
+`basis=(1,2)` will cause the image to be constructed with only 2 glyxels.
 
