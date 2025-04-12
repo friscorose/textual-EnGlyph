@@ -5,6 +5,13 @@ from ._englyph_text import EnGlyphText
 class EnSevSeg(EnGlyphText):
     """Seven Segement Display"""
 
+    DEFAULT_CSS = """
+    EnSevSeg {
+        color: red;
+        background: #400000;
+        border: outer black;
+    }
+    """
     null_pinput = 0xED00 #Unicode PUA offset for pinput in EmSevSeg.ttf
 
     _config = {

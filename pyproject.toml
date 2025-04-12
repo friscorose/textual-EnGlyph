@@ -1,6 +1,6 @@
 [project]
 name = "textual-englyph"
-version = "0.5.0"
+version = "0.5.1"
 description = "A Textual utility widget set to generate terminal images and styled, scalable text."
 readme = "README.md"
 license = {text = "MIT License"}
