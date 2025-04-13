@@ -78,7 +78,6 @@ class EnGlyphText(EnGlyph):
         """A stub handler for processing a renderable"""
         self._renderable.stylize_before(self.rich_style)
 
-    def _postprocess(self) -> None:
         """A stub handler to cache a slate (list of strips) from renderable"""
         slate = Console().render_lines(self._renderable, pad=False)
         slate_buf = []
@@ -94,4 +93,3 @@ class EnGlyphText(EnGlyph):
                     slate_buf = ToGlyxels.slate_join(slate_buf, slate)
         # raise AttributeError( "" )
         self._slate = slate_buf
-        return

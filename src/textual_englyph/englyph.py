@@ -103,7 +103,6 @@ class EnGlyph(Widget, inherit_bindings=False):
         self._font_size = font_size or self._font_size
         self._predicate = self._preprocess(renderable)
         self._process()
-        self._postprocess()
         self.refresh(layout=True)
 
     def render_line(self, y: int) -> Strip:

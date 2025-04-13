@@ -110,10 +110,6 @@ class EnGlyphImage(EnGlyph):
                 repeat=max_frames,
             )
 
-    def _postprocess(self) -> None:
-        """A stub handler to cache a slate (list of strips) from renderable"""
-        pass
-
     def _get_frame_count(self, image):
         frames_n = 0
         image.seek(0)
