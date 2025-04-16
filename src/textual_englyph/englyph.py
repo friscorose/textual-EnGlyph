@@ -2,8 +2,10 @@
 
 from rich.console import RenderableType
 
+from rich.text import Text
 from textual.strip import Strip
 from textual.widget import Widget
+
 
 class EnGlyph(Widget, inherit_bindings=False):
     """
@@ -37,7 +39,7 @@ class EnGlyph(Widget, inherit_bindings=False):
         self.pips = pips
         self._predicate = self._preprocess(renderable)
 
-    def on_mount(self):
+    def on_mount(self) -> None:
         self._process()
 
     def get_content_width(self, container=None, viewport=None):
@@ -74,8 +76,16 @@ class EnGlyph(Widget, inherit_bindings=False):
         if isinstance(rhs, float):
             pass
 
+    def _convert_markup(self, renderable: RenderableType | str) -> Text:
+        if self.markup:
+            return Text.from_markup(renderable)
+        return Text(renderable)
+
     def __str__(self) -> str:
+        renderable = self._convert_markup(self._predicate)
+        self._process()
         output = [strip.text for strip in self._slate]
+        self._renderable = renderable
         return "\n".join(output)
 
     def _preprocess(self) -> None:
