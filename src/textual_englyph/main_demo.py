@@ -3,7 +3,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
 from textual.widgets import Header, Footer, Button, TextArea
-from textual_englyph import EnGlyph
+from textual_englyph import EnGlyphText
 
 # pylint: disable=R0801
 CONTENT = '''\
@@ -12,14 +12,14 @@ from textual_englyph import EnGlyph
 
 class Test(App):
     DEFAULT_CSS = """
-    EnGlyph {
+    EnGlyphText {
         color: green;
         text-style: underline;
         }
     """
 
     def compose(self) -> ComposeResult:
-        yield EnGlyph("EnGlyph [blue]Textual!")
+        yield EnGlyphText("EnGlyph [blue]Textual!", text_size="large")
 
 if __name__ == "__main__":
     app = Test()
@@ -31,16 +31,21 @@ class MainDemo(App):
     """Test CSS and console markup styling the basic englyph use case"""
 
     TITLE = "EnGlyph_Demo"
-    DEFAULT_CSS = """
+    DEFAULT_CSS = """\
     TextArea {
         min-height: 80%;
-        width: 57;
-        max-width: 57;
+        max-width: 80;
     }
     EnGlyph {
         color: green;
-        text-style: underline;
+        width: auto;
+        content-align-vertical: middle;
+        padding: 1 2;
+        &.title {
+            text-style: underline;
+            align: center middle;
         }
+    }
     #choice {
         height: 10;
         align: center top;
@@ -55,12 +60,16 @@ class MainDemo(App):
         yield Footer()
         with Vertical():
             with Horizontal(id="choice"):
-                yield Button(str(EnGlyph("PREV")))
-                yield EnGlyph("Examples")
-                yield Button(str(EnGlyph("NEXT")))
+                yield Button(str(EnGlyphText("PREV", text_size="medium")))
+                yield EnGlyphText("Examples", text_size="medium")
+                yield Button(str(EnGlyphText("NEXT", text_size="medium")))
             with Horizontal():
                 yield self.code
-                yield EnGlyph("EnGlyph [blue]Textual!")
+                yield EnGlyphText(
+                    "EnGlyph [blue]Textual![/blue]",
+                    text_size="large",
+                    classes="title",
+                )
 
 
 def main_demo():
