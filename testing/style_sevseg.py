@@ -41,7 +41,7 @@ class Test(App):
         where 1<<0 (LSB) is segement a, 1<<2 is b, ..., 1<<7 is g and 1<<8 is DP
         """
         yield EnSevSeg("Hello Textual", id="hi")
-        yield EnSevSeg("\uEDCF \uED06 4 1 5", id="pi")
+        yield EnSevSeg("\uEDCF \uED06 4 1 5", id="pi", basis=(1,2))
         yield Button("Set Min", id="toc")
         with Horizontal(id="clock"):
             yield EnSevSeg(" 4", id="hours")

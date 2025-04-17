@@ -9,9 +9,6 @@ class Test(App):
     """Test the basic englyph image use case"""
 
     DEFAULT_CSS = """
-    Screen {
-        background: blue;
-    }
     #I {
         height: 16;
     }
@@ -23,10 +20,10 @@ class Test(App):
     """
 
     def compose(self) -> ComposeResult:
-        # yield EnGlyphImage("testing/hopper.jpg", id="I")
-        # yield EnGlyphText("'Grace' hopper.jpg", id="T")
-        yield EnGlyphImage( "testing/twirl.gif", id="I" )
-        yield EnGlyphText( "Coup de Grâce", id="T", text_size="small" )
+        yield EnGlyphImage("testing/hopper.jpg", id="I")
+        yield EnGlyphText("'Grace' hopper.jpg", id="T")
+        #yield EnGlyphImage( "testing/twirl.gif", id="I" )
+        #yield EnGlyphText( "Coup de Grâce", id="T", text_size="small" )
 
 
 # uv run testing/image_test.py

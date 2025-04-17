@@ -64,21 +64,20 @@ class EnGlyphText(EnGlyph):
     def _preprocess(self, renderable: RenderableType | None = None):
         """A stub handler for processing the input _predicate to the renderable"""
         if renderable is not None:
-            self._renderable = renderable
+            self.renderable = renderable
             if isinstance(renderable, str):
                 if self.markup:
-                    self._renderable = Text.from_markup(renderable)
+                    self.renderable = Text.from_markup(renderable)
                 else:
-                    self._renderable = Text(renderable)
+                    self.renderable = Text(renderable)
         else:
             renderable = self._predicate
         return renderable
 
     def _process(self) -> None:
-        """A stub handler for processing a renderable"""
-        self._renderable.stylize_before(self.rich_style)
-
         """A stub handler to cache a slate (list of strips) from renderable"""
+        self._renderable = self.renderable
+        self._renderable.stylize_before(self.rich_style)
         slate = Console().render_lines(self._renderable, pad=False)
         slate_buf = []
         if self.basis == (0, 0):
@@ -86,9 +85,7 @@ class EnGlyphText(EnGlyph):
         else:
             for strip in slate:
                 for seg in strip:
-                    pane = ToGlyxels.font_pane(
-                        seg.text, self._font_name, self._font_size
-                    )
+                    pane = ToGlyxels.font_pane( seg.text, self._font_name, self._font_size)
                     slate = ToGlyxels.pane2slate(pane, seg.style, self.basis, self.pips)
                     slate_buf = ToGlyxels.slate_join(slate_buf, slate)
         # raise AttributeError( "" )

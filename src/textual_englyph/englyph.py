@@ -75,6 +75,7 @@ class EnGlyph(Widget, inherit_bindings=False):
             pass
 
     def __str__(self) -> str:
+        self._process()
         output = [strip.text for strip in self._slate]
         return "\n".join(output)
 
@@ -88,6 +89,12 @@ class EnGlyph(Widget, inherit_bindings=False):
 
     def _postprocess(self) -> None:
         """A stub handler to cache a slate (list of strips) for rendering"""
+        pass
+
+    def toPane( self, renderable = None, withStyle=False ):
+        pass
+
+    def toSlate( self, pane ):
         pass
 
     def update(
