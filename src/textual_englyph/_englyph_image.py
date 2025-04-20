@@ -34,6 +34,7 @@ class EnGlyphImage(EnGlyph):
     def _rescale_img(self, img) -> None:
         """Contain the image within height or width keeping aspect ratio or fit image if both"""
         use_width = use_height = False
+        cell_width = cell_height = 1
         try:
             cell_width = self.styles.width.cells
             if cell_width is not None:
@@ -47,11 +48,13 @@ class EnGlyphImage(EnGlyph):
             cell_height = self.styles.height.cells
             if cell_height is not None:
                 use_height = True
+            else:
+                cell_height = self.styles.max_height.cells
         except:
             pass
 
         cell_width = cell_width or self.parent.size.width or self.app.size.width
-        cell_height = cell_height or self.styles.max_height.cells
+        cell_height = cell_height or self.parent.size.height
 
         im_size = (self.basis[0] * cell_width, self.basis[1] * cell_height)
         if use_width and use_height:
@@ -63,18 +66,18 @@ class EnGlyphImage(EnGlyph):
 
     def _update_frame(self, image_frame=None) -> None:
         """accept an image frame to show or move to the next image frame in a sequence"""
-        current_frame = self._renderable.tell()
+        current_frame = self.renderable.tell()
         if image_frame is not None:
             frame = image_frame
         else:
-            frame = self._renderable
+            frame = self.renderable
             if self.animate != 0:
                 next_frame = (current_frame + self.animate) % (self._frames_n + 1)
                 frame.seek(next_frame)
         self._dblbuff_push(self._rescale_img(frame.convert("RGB")))
 
     def _dblbuff_init(self) -> None:
-        frame = self._rescale_img(self._renderable.convert("RGB"))
+        frame = self._rescale_img(self.renderable.convert("RGB"))
         self._slate_cache = ToGlyxels.image2slate(
             frame, basis=self.basis, pips=self.pips
         )
@@ -90,11 +93,11 @@ class EnGlyphImage(EnGlyph):
     def _preprocess(self, renderable=None) -> None:
         """A stub init handler to preset "image" properties for glyph processing"""
         if renderable is not None:
-            self._renderable = EnLoad( renderable )
-        self._frames_n = self._get_frame_count(self._renderable)
+            self.renderable = EnLoad( renderable )
+        self._frames_n = self._get_frame_count(self.renderable)
         if self._frames_n > 0:
             self.animate = 1
-            self._duration_s = self._renderable.info.get("duration", 100) / 1000
+            self._duration_s = self.renderable.info.get("duration", 100) / 1000
         else:
             self.animate = 0
         return renderable

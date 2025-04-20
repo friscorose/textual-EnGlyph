@@ -61,24 +61,28 @@ class EnGlyphText(EnGlyph):
                 basis=basis,
                 **kwargs)
 
+    def _convert_markup(self, renderable: RenderableType | str) -> Text:
+        if self.markup:
+            return Text.from_markup(renderable)
+        return Text(renderable)
+
     def _preprocess(self, renderable: RenderableType | None = None):
         """A stub handler for processing the input _predicate to the renderable"""
-        if renderable is not None:
+        if renderable is None:
+            renderable = self._predicate
+        else:
             self.renderable = renderable
             if isinstance(renderable, str):
                 if self.markup:
                     self.renderable = Text.from_markup(renderable)
                 else:
                     self.renderable = Text(renderable)
-        else:
-            renderable = self._predicate
         return renderable
 
     def _process(self) -> None:
         """A stub handler to cache a slate (list of strips) from renderable"""
-        self._renderable = self.renderable
-        self._renderable.stylize_before(self.rich_style)
-        slate = Console().render_lines(self._renderable, pad=False)
+        self.renderable.stylize_before(self.rich_style)
+        slate = Console().render_lines(self.renderable, pad=False)
         slate_buf = []
         if self.basis == (0, 0):
             slate_buf = [Strip(strip) for strip in slate]
