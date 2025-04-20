@@ -61,27 +61,13 @@ class EnGlyphText(EnGlyph):
                 basis=basis,
                 **kwargs)
 
-    def _convert_markup(self, renderable: RenderableType | str) -> Text:
+    def _marking( self, renderable ):
+        self.renderable = Text(renderable)
         if self.markup:
-            return Text.from_markup(renderable)
-        return Text(renderable)
+            self.renderable = Text.from_markup(renderable)
 
-    def _preprocess(self, renderable: RenderableType | None = None):
-        """A stub handler for processing the input _predicate to the renderable"""
-        if renderable is None:
-            renderable = self._predicate
-        else:
-            self.renderable = renderable
-            if isinstance(renderable, str):
-                if self.markup:
-                    self.renderable = Text.from_markup(renderable)
-                else:
-                    self.renderable = Text(renderable)
-        return renderable
-
-    def _process(self) -> None:
-        """A stub handler to cache a slate (list of strips) from renderable"""
-        self.renderable.stylize_before(self.rich_style)
+    def _chalking( self ):
+        """A handler for processing the renderable to a slate (list of strips)"""
         slate = Console().render_lines(self.renderable, pad=False)
         slate_buf = []
         if self.basis == (0, 0):
@@ -92,5 +78,18 @@ class EnGlyphText(EnGlyph):
                     pane = ToGlyxels.font_pane( seg.text, self._font_name, self._font_size)
                     slate = ToGlyxels.pane2slate(pane, seg.style, self.basis, self.pips)
                     slate_buf = ToGlyxels.slate_join(slate_buf, slate)
+        return slate_buf
+
+    def _preprocess(self, renderable: RenderableType | None = None, *args, **kwargs ):
+        """A stub handler for processing the input _predicate to the renderable"""
+        if renderable is None:
+            renderable = self._predicate
+        self._marking( renderable )
+        self._slate = self._chalking()
+        return renderable
+
+    def _process(self) -> None:
+        """A stub handler to cache a slate (list of strips) from renderable"""
+        self.renderable.stylize_before(self.rich_style)
         # raise AttributeError( "" )
-        self._slate = slate_buf
+        self._slate = self._chalking()

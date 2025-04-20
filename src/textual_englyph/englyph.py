@@ -77,11 +77,7 @@ class EnGlyph(Widget, inherit_bindings=False):
         if isinstance(rhs, float):
             pass
 
-    def _convert_markup(self, renderable: RenderableType | str) -> Text:
-        pass
-
     def __str__(self) -> str:
-        #raise AttributeError( "" )
         output = self._predicate
         if self._slate != self._empty_slate:
             output = "\n".join( [strip.text for strip in self._slate] )
@@ -108,15 +104,14 @@ class EnGlyph(Widget, inherit_bindings=False):
     def update(
         self,
         renderable: RenderableType | None = None,
-        basis: tuple | None = None,
-        pips: bool | None = None,
-        font_size: int | None = None,
+        *args,
+        **kwargs
     ) -> None:
         """New display input"""
-        self.basis = basis or self.basis
-        self.pips = pips or self.pips
-        self._font_size = font_size or self._font_size
-        self._predicate = self._preprocess(renderable)
+        self.basis = kwargs.pop( 'basis', self.basis )
+        self.pips = kwargs.pop( 'pips', self.pips )
+        self._font_size = kwargs.pop( 'font_size', self._font_size )
+        self._predicate = self._preprocess( renderable, *args, **kwargs )
         self._process()
         self.refresh(layout=True)
 
