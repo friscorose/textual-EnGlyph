@@ -83,6 +83,19 @@ class EnGlyph(Widget, inherit_bindings=False):
             output = "\n".join( [strip.text for strip in self._slate] )
         return output
 
+    def _maybe_default( self, key, default, kwargs ):
+        _key = '_'+key
+        self_val = attr_val = default
+        if hasattr( self, key ):
+            self_val = getattr( self, _key )
+            attr_val = kwargs.pop(key, self_val )
+            setattr( self, _key, attr_val )
+        else:
+            attr_val = kwargs.pop(key, default )
+            setattr( self, _key, attr_val )
+        #raise AttributeError( attr_val )
+        return getattr( self, _key )
+
     def _preprocess(self) -> None:
         """A stub handler for processing the input _predicate to the renderable"""
         pass

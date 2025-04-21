@@ -42,31 +42,27 @@ class EnGlyphText(EnGlyph):
     def __init__(
         self,
         *args,
-        text_size: str|None = "x-small",
-        font_name: str|None = None,
-        font_size: int|None = None,
-        basis: tuple|None = None,
-        markup: bool = True,
         **kwargs,
     ):
-        if font_name is not None:
-            basis = basis or (2,4)
+        self._sizing( self, *args, kwargs=kwargs )
+        super().__init__( *args, basis=self._basis, **kwargs)
+
+    def _sizing( self, *args, kwargs ):
+        text_size = self._maybe_default( 'text_size', 'x-small', kwargs=kwargs )
+        basis = self._maybe_default( 'basis', self._config[self._text_size][2], kwargs=kwargs )
+        self._maybe_default( 'markup', True, kwargs=kwargs )
+        self._maybe_default( 'font_size', self._config[self._text_size][0], kwargs=kwargs )
+        fn = self._maybe_default( 'font_name', self._config[self._text_size][1], kwargs=kwargs )
+        #raise AttributeError( self._text_size )
+        #raise AttributeError( basis )
+
+    def marking( self, renderable ):
+        if self._markup:
+            return Text.from_markup(renderable)
         else:
-            basis = basis or self._config[text_size][2]
-        self._font_size = font_size or self._config[text_size][0]
-        self._font_name = font_name or self._config[text_size][1]
-        self.markup = markup
-        super().__init__(
-                *args,
-                basis=basis,
-                **kwargs)
+            return Text(renderable)
 
-    def _marking( self, renderable ):
-        self.renderable = Text(renderable)
-        if self.markup:
-            self.renderable = Text.from_markup(renderable)
-
-    def _chalking( self ):
+    def chalking( self ):
         """A handler for processing the renderable to a slate (list of strips)"""
         slate = Console().render_lines(self.renderable, pad=False)
         slate_buf = []
@@ -84,12 +80,12 @@ class EnGlyphText(EnGlyph):
         """A stub handler for processing the input _predicate to the renderable"""
         if renderable is None:
             renderable = self._predicate
-        self._marking( renderable )
-        self._slate = self._chalking()
+        self.renderable = self.marking( renderable )
+        self._slate = self.chalking()
         return renderable
 
     def _process(self) -> None:
         """A stub handler to cache a slate (list of strips) from renderable"""
         self.renderable.stylize_before(self.rich_style)
         # raise AttributeError( "" )
-        self._slate = self._chalking()
+        self._slate = self.chalking()
