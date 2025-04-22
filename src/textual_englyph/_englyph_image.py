@@ -56,7 +56,7 @@ class EnGlyphImage(EnGlyph):
         cell_width = cell_width or self.parent.size.width or self.app.size.width
         cell_height = cell_height or self.parent.size.height
 
-        im_size = (self.basis[0] * cell_width, self.basis[1] * cell_height)
+        im_size = (self._basis[0] * cell_width, self._basis[1] * cell_height)
         if use_width and use_height:
             im_data = img.resize( im_size )
         else:
@@ -79,7 +79,7 @@ class EnGlyphImage(EnGlyph):
     def _dblbuff_init(self) -> None:
         frame = self._rescale_img(self.renderable.convert("RGB"))
         self._slate_cache = ToGlyxels.image2slate(
-            frame, basis=self.basis, pips=self.pips
+            frame, basis=self._basis, pips=self._pips
         )
         self._slate = self._slate_cache
 
@@ -87,7 +87,7 @@ class EnGlyphImage(EnGlyph):
         self._slate = self._slate_cache
         self.refresh(layout=True)
         self._slate_cache = ToGlyxels.image2slate(
-            frame, basis=self.basis, pips=self.pips
+            frame, basis=self._basis, pips=self._pips
         )
 
     def _preprocess(self, renderable=None) -> None:

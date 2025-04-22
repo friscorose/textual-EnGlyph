@@ -45,16 +45,18 @@ class EnGlyphText(EnGlyph):
         **kwargs,
     ):
         self._sizing( self, *args, kwargs=kwargs )
-        super().__init__( *args, basis=self._basis, **kwargs)
+        super().__init__( *args, basis=self._basis, **kwargs )
 
     def _sizing( self, *args, kwargs ):
-        text_size = self._maybe_default( 'text_size', 'x-small', kwargs=kwargs )
-        basis = self._maybe_default( 'basis', self._config[self._text_size][2], kwargs=kwargs )
-        self._maybe_default( 'markup', True, kwargs=kwargs )
+        """Setup the attributes used for displaying character glyphs"""
+        # text_size presets font_size, font_name and basis
+        self._maybe_default( 'text_size', 'x-small', kwargs=kwargs )
+        # Allow overrides by calls
         self._maybe_default( 'font_size', self._config[self._text_size][0], kwargs=kwargs )
-        fn = self._maybe_default( 'font_name', self._config[self._text_size][1], kwargs=kwargs )
-        #raise AttributeError( self._text_size )
-        #raise AttributeError( basis )
+        self._maybe_default( 'font_name', self._config[self._text_size][1], kwargs=kwargs )
+        self._maybe_default( 'basis', self._config[self._text_size][2], kwargs=kwargs )
+        # Enable fancy text
+        self._maybe_default( 'markup', True, kwargs=kwargs )
 
     def marking( self, renderable ):
         if self._markup:
@@ -66,13 +68,13 @@ class EnGlyphText(EnGlyph):
         """A handler for processing the renderable to a slate (list of strips)"""
         slate = Console().render_lines(self.renderable, pad=False)
         slate_buf = []
-        if self.basis == (0, 0):
+        if self._basis == (0, 0):
             slate_buf = [Strip(strip) for strip in slate]
         else:
             for strip in slate:
                 for seg in strip:
                     pane = ToGlyxels.font_pane( seg.text, self._font_name, self._font_size)
-                    slate = ToGlyxels.pane2slate(pane, seg.style, self.basis, self.pips)
+                    slate = ToGlyxels.pane2slate(pane, seg.style, self._basis, self._pips)
                     slate_buf = ToGlyxels.slate_join(slate_buf, slate)
         return slate_buf
 

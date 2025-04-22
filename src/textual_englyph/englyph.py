@@ -34,11 +34,11 @@ class EnGlyph(Widget, inherit_bindings=False):
     _slate = _slate_cache = _empty_slate
     _pane = None
 
-    def __init__(self, renderable, *args, basis=(2, 4), pips=False, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.basis = basis
-        self.pips = pips
-        self._predicate = self._preprocess(renderable)
+    def __init__(self, renderable, *args, **kwargs):
+        self._maybe_default( 'basis', (2,4), kwargs=kwargs )
+        self._maybe_default( 'pips', False, kwargs=kwargs )
+        super().__init__( *args, **kwargs )
+        self._predicate = self._preprocess( renderable )
 
     def on_mount(self) -> None:
         self._process()
@@ -84,6 +84,7 @@ class EnGlyph(Widget, inherit_bindings=False):
         return output
 
     def _maybe_default( self, key, default, kwargs ):
+        """Set obj _attribute to maybe kwargs value and remove from kwargs, or default"""
         _key = '_'+key
         self_val = attr_val = default
         if hasattr( self, key ):
@@ -121,9 +122,8 @@ class EnGlyph(Widget, inherit_bindings=False):
         **kwargs
     ) -> None:
         """New display input"""
-        self.basis = kwargs.pop( 'basis', self.basis )
-        self.pips = kwargs.pop( 'pips', self.pips )
-        self._font_size = kwargs.pop( 'font_size', self._font_size )
+        self._maybe_default( 'basis', self._basis, kwargs=kwargs )
+        self._maybe_default( 'pips', self._pips, kwargs=kwargs )
         self._predicate = self._preprocess( renderable, *args, **kwargs )
         self._process()
         self.refresh(layout=True)
