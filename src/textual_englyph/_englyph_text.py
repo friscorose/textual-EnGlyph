@@ -44,10 +44,10 @@ class EnGlyphText(EnGlyph):
         *args,
         **kwargs,
     ):
-        self._sizing( self, *args, kwargs=kwargs )
+        self._maybe_reset( self, *args, kwargs=kwargs )
         super().__init__( *args, basis=self._basis, **kwargs )
 
-    def _sizing( self, *args, kwargs ):
+    def _maybe_reset( self, *args, kwargs ):
         """Setup the attributes used for displaying character glyphs"""
         # text_size presets font_size, font_name and basis
         self._maybe_default( 'text_size', 'x-small', kwargs=kwargs )
