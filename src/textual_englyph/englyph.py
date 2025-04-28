@@ -83,18 +83,15 @@ class EnGlyph(Widget, inherit_bindings=False):
             output = "\n".join( [strip.text for strip in self._slate] )
         return output
 
+    def _maybe_reset( self, *arg, kwargs ):
+        pass
+
     def _maybe_default( self, key, default, kwargs ):
         """Set obj _attribute to maybe kwargs value and remove from kwargs, or default"""
         _key = '_'+key
-        self_val = attr_val = default
-        if hasattr( self, key ):
-            self_val = getattr( self, _key )
-            attr_val = kwargs.pop(key, self_val )
+        attr_val = kwargs.pop(key, default )
+        if attr_val is not None:
             setattr( self, _key, attr_val )
-        else:
-            attr_val = kwargs.pop(key, default )
-            setattr( self, _key, attr_val )
-        #raise AttributeError( attr_val )
         return getattr( self, _key )
 
     def _preprocess(self) -> None:
@@ -122,7 +119,8 @@ class EnGlyph(Widget, inherit_bindings=False):
         **kwargs
     ) -> None:
         """New display input"""
-        self._maybe_default( 'basis', self._basis, kwargs=kwargs )
+        self._maybe_reset( *args, kwargs=kwargs )
+        #self._maybe_default( 'basis', self._basis, kwargs=kwargs )
         self._maybe_default( 'pips', self._pips, kwargs=kwargs )
         self._predicate = self._preprocess( renderable, *args, **kwargs )
         self._process()
