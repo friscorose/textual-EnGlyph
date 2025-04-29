@@ -2,6 +2,8 @@
 
 from PIL import ImageOps
 
+from textual import work
+
 from .englyph import EnGlyph
 from .toglyxels import ToGlyxels, EnLoad
 
@@ -64,6 +66,7 @@ class EnGlyphImage(EnGlyph):
 
         return im_data
 
+    @work(exclusive=True, thread=True )
     def _update_frame(self, image_frame=None) -> None:
         """accept an image frame to show or move to the next image frame in a sequence"""
         current_frame = self.renderable.tell()

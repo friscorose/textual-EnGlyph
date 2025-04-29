@@ -8,11 +8,12 @@ from importlib import resources
 from PIL import Image, ImageFont
 
 from textual.strip import Strip
+from rich.color import Color, ColorTriplet, ColorType
 from rich.segment import Segment
 from rich.style import Style
-#from rich.traceback import install
+from rich.traceback import install
 
-#install()
+install()
 # raise ValueError("My message")
 
 def EnLoad( maybe_path ):
@@ -103,20 +104,20 @@ class ToGlyxels:
 
         fg_color = ToGlyxels._colors2rgb4sty(fg)
         bg_color = ToGlyxels._colors2rgb4sty(bg)
-        glyph_sty = Style.parse(" on ".join([fg_color, bg_color]))
+        glyph_sty = Style( color=fg_color, bgcolor=bg_color)
 
         return (glut_idx, glyph_sty)
 
     @staticmethod
-    def _colors2rgb4sty(rgb_list):
+    def _colors2rgb4sty(RGB_list):
         """Compute broken but fast RGB centroid"""
+        rgb_list = RGB_list
         n = len(rgb_list)
         if n == 0:
-            R = G = B = 0
+            return Color( name="rgb_cell", type=ColorType.TRUECOLOR, triplet=ColorTriplet(0, 0, 0) )
         else:
-            v_sum = [sum(x) for x in zip(*rgb_list)]
-            R, G, B = [int(x / n) for x in v_sum]
-        return f"rgb({R},{G},{B})"
+            R, G, B = [sum(x) for x in zip(*rgb_list)]
+            return Color( name="rgb_cell", type=ColorType.TRUECOLOR, triplet=ColorTriplet(R//n, G//n, B//n) )
 
     @staticmethod
     def pane2slate(pane, style: Style | None, basis, pips) -> List[List[Segment]]:
