@@ -97,10 +97,10 @@ if __name__ == "__main__":
 The default argument string for EnGlyphImage is a path to a named image. An
 image can be resized by assigning TCSS attributes of width, height, max_width
 and max_height. Aspect ratio is preserved if only one attribute is used and the
-max attribnutes can be used to clip the image. The image types supported are
+max attributes can be used to clip the image. The image types supported are
 those supported by the Pillow module. The default glyxels used to build the
 image in your terminal are 2x4 dots per cell, but a cell can only support 2
-colors so the image is a nearest two color representation for the space coverd
-by a given cell. If you need fully acurate colors then passing the attribute
+colors so the image is a nearest two color representation for the space covered
+by a given cell. If you need fully accurate colors then passing the attribute
 `basis=(1,2)` will cause the image to be constructed with only 2 glyxels.
 

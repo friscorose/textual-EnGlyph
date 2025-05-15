@@ -77,16 +77,16 @@ class EnGlyphImage(EnGlyph):
             if self.animate != 0:
                 next_frame = (current_frame + self.animate) % (self._frames_n + 1)
                 frame.seek(next_frame)
-        self._dblbuff_push(self._rescale_img(frame.convert("RGB")))
+        self._pipeline_push(self._rescale_img(frame.convert("RGB")))
 
-    def _dblbuff_init(self) -> None:
+    def _pipeline_init(self) -> None:
         frame = self._rescale_img(self.renderable.convert("RGB"))
         self._slate_cache = ToGlyxels.image2slate(
             frame, basis=self._basis, pips=self._pips
         )
         self._slate = self._slate_cache
 
-    def _dblbuff_push(self, frame) -> None:
+    def _pipeline_push(self, frame) -> None:
         self._slate = self._slate_cache
         self.refresh(layout=True)
         self._slate_cache = ToGlyxels.image2slate(
@@ -107,7 +107,7 @@ class EnGlyphImage(EnGlyph):
 
     def _process(self) -> None:
         """A stub on_mount (DOM ready) handler for "image" glyph processing"""
-        self._dblbuff_init()
+        self._pipeline_init()
         if self.animate != 0:
             max_frames = self._repeats_n * (self._frames_n + 1)
             self.interval_update = self.set_interval(

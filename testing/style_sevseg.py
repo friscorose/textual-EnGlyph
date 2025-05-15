@@ -42,11 +42,13 @@ class Test(App):
         """
         yield EnSevSeg("Hello Textual", id="hi")
         yield EnSevSeg("\uEDCF \uED06 4 1 5", id="pi", basis=(1,2))
-        yield Button("Set Min", id="toc")
+        yield Button("Add Min", id="toc")
         with Horizontal(id="clock"):
             yield EnSevSeg(" 4", id="hours")
             yield EnGlyphText("[blink]:", text_size="small", id="colon")
             yield EnSevSeg(f"{self.minute:02}", id="minutes")
+        yield EnGlyphText('Your terminal font')
+        yield EnGlyphText('\uED06 2 3', font_name='EnSevSeg_8x5.ttf', font_size=8, basis=(2,4) )
 
     def on_button_pressed(self):
         self.minute +=1

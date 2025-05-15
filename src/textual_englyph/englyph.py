@@ -1,10 +1,48 @@
 """Create large text output module for Textual with custom widget EnGlyph"""
-
 from rich.console import RenderableType
 
 from rich.text import Text
 from textual.strip import Strip
 from textual.widget import Widget
+
+
+class EnPipe():
+    """ A data structure for managing a slate(list'o'strips) sequence"""
+
+    blank = [Strip.blank(0)]
+    def __init__( self, slate=None ):
+        self.aperiodic = False
+        self.interval = 100/1000
+        self.index = 0
+        slate = slate or self.blank
+        self.slates = { self.index:slate }
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        '''return the next slate in the pipeline'''
+        if self.aperiodic:
+            self.slates[ self.index ] = self.blank
+        self.index = (self.index+1)%len(self.slates)
+        return self.which()
+
+    def __setitem__(self, key:int|float, value):
+        '''enable slice/index assignment'''
+        self.slates[ int(key) ] = value
+
+    def __getitem__(self, key:int|float):
+        '''enable slice/index access'''
+        return self.slates[ int(key)%len(self.slates) ]
+
+    def append(self, value):
+        self.slates[ len(self.slates) ] = value
+
+    def which(self, value=None ):
+        '''Optionally change and return the current slate in the pipeline'''
+        if value is not None:
+            self.slates[ self.index ] = value
+        return self.slates[ self.index ]
 
 
 class EnGlyph(Widget, inherit_bindings=False):
@@ -30,15 +68,21 @@ class EnGlyph(Widget, inherit_bindings=False):
     }
     """
 
-    _empty_slate = [Strip.blank(0)]
-    _slate = _slate_cache = _empty_slate
-    _pane = None
 
     def __init__(self, renderable, *args, **kwargs):
+        self._maybe_default( 'slate_pipe', EnPipe(), kwargs=kwargs )
         self._maybe_default( 'basis', (2,4), kwargs=kwargs )
         self._maybe_default( 'pips', False, kwargs=kwargs )
         super().__init__( *args, **kwargs )
         self._predicate = self._preprocess( renderable )
+
+    @property
+    def _slate(self):
+        return self._slate_pipe.which()
+
+    @_slate.setter
+    def _slate(self, renderable):
+        self._slate_pipe.which( renderable )
 
     def on_mount(self) -> None:
         self._process()
@@ -49,37 +93,10 @@ class EnGlyph(Widget, inherit_bindings=False):
     def get_content_height(self, container=None, viewport=None, width=None):
         return len(self._slate)
 
-    def __add__(self, rhs):
-        """create the union of two EnGlyphed widgets"""
-        # return self._union( self, rhs )
-        pass
-
-    __radd__ = __add__
-
-    def __sub__(self, rhs):
-        """create the difference of two EnGlyphed widgetslinux disables"""
-        return self._difference(self, rhs)
-
-    def __mul__(self, rhs):
-        """create the intersection of two EnGlyphed widgets"""
-        return self._intersection(self, rhs)
-
-    def __div__(self, rhs):
-        """create the intersection of two EnGlyphed widgets"""
-        return self._disection(self, rhs)
-
-    def _union(self, rhs):
-        for idy, strip in enumerate(rhs._slate):
-            for idx, seg in enumerate(strip):
-                pass
-
-    def _intersection(self, rhs):
-        if isinstance(rhs, float):
-            pass
 
     def __str__(self) -> str:
         output = self._predicate
-        if self._slate != self._empty_slate:
+        if self._slate != EnPipe().blank:
             output = "\n".join( [strip.text for strip in self._slate] )
         return output
 
@@ -106,12 +123,6 @@ class EnGlyph(Widget, inherit_bindings=False):
         """A stub handler to cache a slate (list of strips) for rendering"""
         pass
 
-    def toPane( self, renderable = None, withStyle=False ):
-        pass
-
-    def toSlate( self, pane ):
-        pass
-
     def update(
         self,
         renderable: RenderableType | None = None,
@@ -120,7 +131,7 @@ class EnGlyph(Widget, inherit_bindings=False):
     ) -> None:
         """New display input"""
         self._maybe_reset( *args, kwargs=kwargs )
-        #self._maybe_default( 'basis', self._basis, kwargs=kwargs )
+        self._maybe_default( 'basis', self._basis, kwargs=kwargs )
         self._maybe_default( 'pips', self._pips, kwargs=kwargs )
         self._predicate = self._preprocess( renderable, *args, **kwargs )
         self._process()
@@ -128,7 +139,7 @@ class EnGlyph(Widget, inherit_bindings=False):
 
     def render_line(self, y: int) -> Strip:
         self._postprocess()
-        strip = Strip.blank(0)
+        strip = EnPipe().blank
         if y < self.get_content_height():
             strip = self._slate[y]
         return strip

@@ -38,13 +38,13 @@ class EnGlyphText(EnGlyph):
         "xxx-large": (18, "TerminusTTF-4.46.0.ttf", (2, 4)),
         "custom": (None, None, None)
     }
-    _glyph_state = deque( _config )
 
     def __init__(
         self,
         *args,
         **kwargs,
     ):
+        self._glyph_state = deque( self._config )
         self._maybe_default( 'text_size', 'x-small', kwargs=kwargs )
         self._maybe_reset( self, *args, kwargs=kwargs )
         super().__init__( *args, basis=self._basis, **kwargs )
