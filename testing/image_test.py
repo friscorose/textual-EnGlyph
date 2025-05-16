@@ -10,7 +10,7 @@ class Test(App):
 
     DEFAULT_CSS = """
     #I {
-        height: 16;
+        height: 32;
     }
     #T {
         background: white 50%;

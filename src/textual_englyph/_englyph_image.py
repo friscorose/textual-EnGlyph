@@ -31,7 +31,7 @@ class EnGlyphImage(EnGlyph):
         self._repeats_n = repeat
         super().__init__(*args, **kwargs)
 
-    animate = False
+    animate = 0
 
     def _rescale_img(self, img) -> None:
         """Contain the image within height or width keeping aspect ratio or fit image if both"""
@@ -66,7 +66,6 @@ class EnGlyphImage(EnGlyph):
 
         return im_data
 
-    @work(exclusive=True, thread=True )
     def _update_frame(self, image_frame=None) -> None:
         """accept an image frame to show or move to the next image frame in a sequence"""
         current_frame = self.renderable.tell()
@@ -79,30 +78,32 @@ class EnGlyphImage(EnGlyph):
                 frame.seek(next_frame)
         self._pipeline_push(self._rescale_img(frame.convert("RGB")))
 
+    #@work(exclusive=True, thread=True )
     def _pipeline_init(self) -> None:
         frame = self._rescale_img(self.renderable.convert("RGB"))
-        self._slate_cache = ToGlyxels.image2slate(
-            frame, basis=self._basis, pips=self._pips
-        )
-        self._slate = self._slate_cache
+        slate = ToGlyxels.image2slate( frame, basis=self._basis, pips=self._pips)
+        self._slate_pipe.this( slate )
+        if self.animate != 0:
+            for idx in range( 1, self._frames_n+1 ):
+                self.renderable.seek( idx )
+                frame = self._rescale_img(self.renderable.convert("RGB"))
+                slate = ToGlyxels.image2slate( frame, basis=self._basis, pips=self._pips)
+                self._slate_pipe.append( slate )
 
-    def _pipeline_push(self, frame) -> None:
-        self._slate = self._slate_cache
+
+    def _pipeline_push(self) -> None:
+        _ = next( self._slate_pipe )
         self.refresh(layout=True)
-        self._slate_cache = ToGlyxels.image2slate(
-            frame, basis=self._basis, pips=self._pips
-        )
 
     def _preprocess(self, renderable=None) -> None:
-        """A stub init handler to preset "image" properties for glyph processing"""
+        """init handler to preset PIL image(renderable) properties for glyph processing"""
         if renderable is not None:
             self.renderable = EnLoad( renderable )
         self._frames_n = self._get_frame_count(self.renderable)
         if self._frames_n > 0:
+            """animation steps per frame"""
             self.animate = 1
             self._duration_s = self.renderable.info.get("duration", 100) / 1000
-        else:
-            self.animate = 0
         return renderable
 
     def _process(self) -> None:
@@ -112,7 +113,7 @@ class EnGlyphImage(EnGlyph):
             max_frames = self._repeats_n * (self._frames_n + 1)
             self.interval_update = self.set_interval(
                 interval=self._duration_s,
-                callback=self._update_frame,
+                callback=self._pipeline_push,
                 repeat=max_frames,
             )
 

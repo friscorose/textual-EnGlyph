@@ -25,7 +25,7 @@ class EnPipe():
         if self.aperiodic:
             self.slates[ self.index ] = self.blank
         self.index = (self.index+1)%len(self.slates)
-        return self.which()
+        return self.this()
 
     def __setitem__(self, key:int|float, value):
         '''enable slice/index assignment'''
@@ -38,7 +38,7 @@ class EnPipe():
     def append(self, value):
         self.slates[ len(self.slates) ] = value
 
-    def which(self, value=None ):
+    def this(self, value=None ):
         '''Optionally change and return the current slate in the pipeline'''
         if value is not None:
             self.slates[ self.index ] = value
@@ -78,11 +78,11 @@ class EnGlyph(Widget, inherit_bindings=False):
 
     @property
     def _slate(self):
-        return self._slate_pipe.which()
+        return self._slate_pipe.this()
 
     @_slate.setter
     def _slate(self, renderable):
-        self._slate_pipe.which( renderable )
+        self._slate_pipe.this( renderable )
 
     def on_mount(self) -> None:
         self._process()
