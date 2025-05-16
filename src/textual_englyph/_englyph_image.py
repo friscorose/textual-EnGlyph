@@ -23,7 +23,7 @@ class EnGlyphImage(EnGlyph):
 
     DEFAULT_CSS = """
     EnGlyphImage {
-        max-height: 24;
+        max-height: 32;
     }
     """
 
@@ -66,32 +66,22 @@ class EnGlyphImage(EnGlyph):
 
         return im_data
 
-    def _update_frame(self, image_frame=None) -> None:
-        """accept an image frame to show or move to the next image frame in a sequence"""
-        current_frame = self.renderable.tell()
-        if image_frame is not None:
-            frame = image_frame
-        else:
-            frame = self.renderable
-            if self.animate != 0:
-                next_frame = (current_frame + self.animate) % (self._frames_n + 1)
-                frame.seek(next_frame)
-        self._pipeline_push(self._rescale_img(frame.convert("RGB")))
-
-    #@work(exclusive=True, thread=True )
     def _pipeline_init(self) -> None:
         frame = self._rescale_img(self.renderable.convert("RGB"))
         slate = ToGlyxels.image2slate( frame, basis=self._basis, pips=self._pips)
         self._slate_pipe.this( slate )
         if self.animate != 0:
-            for idx in range( 1, self._frames_n+1 ):
-                self.renderable.seek( idx )
-                frame = self._rescale_img(self.renderable.convert("RGB"))
-                slate = ToGlyxels.image2slate( frame, basis=self._basis, pips=self._pips)
-                self._slate_pipe.append( slate )
+            self._pipeline_fill( self.renderable )
 
+    #@work(exclusive=True, thread=True )
+    def _pipeline_fill(self, renderable) -> None:
+        for idx in range( 1, self._frames_n+1 ):
+            renderable.seek( idx )
+            frame = self._rescale_img(renderable.convert("RGB"))
+            slate = ToGlyxels.image2slate( frame, basis=self._basis, pips=self._pips)
+            self._slate_pipe.append( slate )
 
-    def _pipeline_push(self) -> None:
+    def _pipeline_next(self) -> None:
         _ = next( self._slate_pipe )
         self.refresh(layout=True)
 
@@ -113,7 +103,7 @@ class EnGlyphImage(EnGlyph):
             max_frames = self._repeats_n * (self._frames_n + 1)
             self.interval_update = self.set_interval(
                 interval=self._duration_s,
-                callback=self._pipeline_push,
+                callback=self._pipeline_next,
                 repeat=max_frames,
             )
 
