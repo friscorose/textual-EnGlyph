@@ -73,38 +73,44 @@ class EnGlyphImage(EnGlyph):
         if self.animate != 0:
             self._pipeline_fill( self.renderable )
 
-    #@work(exclusive=True, thread=True )
+    @work(exclusive=True, thread=True )
     def _pipeline_fill(self, renderable) -> None:
         for idx in range( 1, self._frames_n+1 ):
             renderable.seek( idx )
             frame = self._rescale_img(renderable.convert("RGB"))
             slate = ToGlyxels.image2slate( frame, basis=self._basis, pips=self._pips)
             self._slate_pipe.append( slate )
+        self.enable_animate()
 
     def _pipeline_next(self) -> None:
         _ = next( self._slate_pipe )
         self.refresh(layout=True)
 
-    def _preprocess(self, renderable=None) -> None:
+    def enable_animate(self):
+        if self.animate != 0:
+            self.update_timer.reset()
+            self.update_timer.resume()
+
+    def _preprocess(self, pil_img=None) -> None:
         """init handler to preset PIL image(renderable) properties for glyph processing"""
-        if renderable is not None:
-            self.renderable = EnLoad( renderable )
+        if pil_img is not None:
+            self.renderable = EnLoad( pil_img )
         self._frames_n = self._get_frame_count(self.renderable)
         if self._frames_n > 0:
-            """animation steps per frame"""
-            self.animate = 1
+            self.animate = 1 # animation steps per frame
             self._duration_s = self.renderable.info.get("duration", 100) / 1000
-        return renderable
+        return pil_img
 
     def _process(self) -> None:
         """A stub on_mount (DOM ready) handler for "image" glyph processing"""
         self._pipeline_init()
         if self.animate != 0:
             max_frames = self._repeats_n * (self._frames_n + 1)
-            self.interval_update = self.set_interval(
+            self.update_timer = self.set_interval(
                 interval=self._duration_s,
                 callback=self._pipeline_next,
                 repeat=max_frames,
+                pause=True
             )
 
     def _get_frame_count(self, image):
