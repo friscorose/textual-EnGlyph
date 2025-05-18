@@ -82,7 +82,7 @@ class EnGlyphImage(EnGlyph):
             self._slate_pipe.append( slate )
         self.enable_animate()
 
-    def _pipeline_next(self) -> None:
+    def _pipeline_advance(self) -> None:
         _ = next( self._slate_pipe )
         self.refresh(layout=True)
 
@@ -108,7 +108,7 @@ class EnGlyphImage(EnGlyph):
             max_frames = self._repeats_n * (self._frames_n + 1)
             self.animate_timer = self.set_interval(
                 interval=self._duration_s,
-                callback=self._pipeline_next,
+                callback=self._pipeline_advance,
                 repeat=max_frames,
                 pause=True
             )

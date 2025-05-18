@@ -13,9 +13,9 @@ class Test(App):
         height: 32;
     }
     #T {
-        background: white 50%;
+        background: white 20%;
         position: relative;
-        offset: 6 -1;
+        offset: 34 -1;
     }
     """
 
@@ -23,11 +23,11 @@ class Test(App):
         #yield EnGlyphImage("testing/hopper.jpg", id="I")
         #yield EnGlyphText("'Grace' hopper.jpg", id="T")
         yield EnGlyphImage( "testing/twirl.gif", id="I" )
-        yield EnGlyphText( "Coup de Grâce", id="T", text_size="small" )
+        yield EnGlyphText( " Coup de Grâce ", id="T", text_size="medium" )
 
 
 # uv run testing/image_test.py
 if __name__ == "__main__":
     # with pyinstrument.profile():
-    Test().run()
-# Test().run(inline=True, inline_no_clear=True)
+    #Test().run()
+    Test().run(inline=True, inline_no_clear=True)
