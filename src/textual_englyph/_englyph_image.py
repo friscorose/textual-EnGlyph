@@ -88,8 +88,8 @@ class EnGlyphImage(EnGlyph):
 
     def enable_animate(self):
         if self.animate != 0:
-            self.update_timer.reset()
-            self.update_timer.resume()
+            self.animate_timer.reset()
+            self.animate_timer.resume()
 
     def _preprocess(self, pil_img=None) -> None:
         """init handler to preset PIL image(renderable) properties for glyph processing"""
@@ -106,7 +106,7 @@ class EnGlyphImage(EnGlyph):
         self._pipeline_init()
         if self.animate != 0:
             max_frames = self._repeats_n * (self._frames_n + 1)
-            self.update_timer = self.set_interval(
+            self.animate_timer = self.set_interval(
                 interval=self._duration_s,
                 callback=self._pipeline_next,
                 repeat=max_frames,
