@@ -34,7 +34,8 @@ class EnGlyphImage(EnGlyph):
     animate = 0
 
     def _rescale_img(self, img) -> None:
-        """Contain the image within height or width keeping aspect ratio or fit image if both"""
+        """Contain the image within CSS height or width keeping aspect ratio or fit image if both
+        if max-height or max-width is specified the crop the image to the max dimension."""
         use_width = use_height = False
         cell_width = cell_height = 1
         try:
@@ -43,8 +44,8 @@ class EnGlyphImage(EnGlyph):
                 use_width = True
             else:
                 cell_width = self.styles.max_width.cells 
-        except:
-            pass
+        except AttributeError:
+            print( "Styles not available!" )
 
         try:
             cell_height = self.styles.height.cells
@@ -52,8 +53,8 @@ class EnGlyphImage(EnGlyph):
                 use_height = True
             else:
                 cell_height = self.styles.max_height.cells
-        except:
-            pass
+        except AttributeError:
+            print( "Styles not available!" )
 
         cell_width = cell_width or self.parent.size.width or self.app.size.width
         cell_height = cell_height or self.parent.size.height
@@ -102,7 +103,7 @@ class EnGlyphImage(EnGlyph):
         return pil_img
 
     def _process(self) -> None:
-        """A stub on_mount (DOM ready) handler for "image" glyph processing"""
+        """An on_mount (DOM ready) handler for "image" glyph processing"""
         self._pipeline_init()
         if self.animate != 0:
             max_frames = self._repeats_n * (self._frames_n + 1)
@@ -115,12 +116,14 @@ class EnGlyphImage(EnGlyph):
 
     def _get_frame_count(self, image):
         frames_n = 0
-        image.seek(0)
-        while True:
-            try:
-                image.seek(frames_n + 1)
-                frames_n += 1
-            except EOFError:
-                break
-        image.seek(0)
-        return frames_n
+        try:
+            image.seek(0)
+            while True:
+                try:
+                    image.seek(frames_n + 1)
+                    frames_n += 1
+                except EOFError:
+                    break
+            image.seek(0)
+        finally:
+            return frames_n

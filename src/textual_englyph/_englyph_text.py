@@ -1,5 +1,5 @@
 """Create large text output module for Textual with custom widget EnGlyph"""
-from collections import deque
+from collections import deque, namedtuple
 
 from rich.console import Console, RenderableType
 from rich.text import Text
@@ -27,6 +27,7 @@ class EnGlyphText(EnGlyph):
         disabled:bool, Standard Textual Widget argument
     """
 
+
     _config = {
         #"xx-small": (0, "", (0, 0)),  # Unicode text like ᵧ (0x1d67), future use
         "x-small": (1, "", (0, 0)),  # What your terminal normally uses
@@ -38,6 +39,24 @@ class EnGlyphText(EnGlyph):
         "xxx-large": (18, "TerminusTTF-4.46.0.ttf", (2, 4)),
         "custom": (None, None, None)
     }
+
+
+    # All values are integer glyxel counts
+    SlugSet= namedtuple( 'SlugSet', ['basis', 'points', 'font', 'leading', 'tracking'] )
+    _settings = {  
+        # Unicode text like ᵧ (0x1d67), future use
+        #"xx-small": SlugSet( basis=(0,0), points=0, font="", leading=1, tracking=1 ),
+        # What your terminal normally uses
+        "x-small": SlugSet( basis=(0,0), points=0, font="", leading=1, tracking=1 ),
+        "small": SlugSet( basis=(2,4), points=8, font="miniwi.ttf", leading=8, tracking=1 ),
+        "medium": SlugSet( basis=(2,4), points=7, font="casio-fx-9860gii.ttf", leading=8, tracking=1 ),
+        "large": SlugSet( basis=(2,4), points=12, font="TerminusTTF-4.46.0.ttf", leading=12, tracking=1 ),
+        "x-large": SlugSet( basis=(2,4), points=14, font="TerminusTTF-4.46.0.ttf", leading=16, tracking=1 ),
+        "xx-large": SlugSet( basis=(2,4), points=18, font="TerminusTTF-4.46.0.ttf", leading=20, tracking=2 ),
+        "xxx-large": SlugSet( basis=(2,4), points=20, font="TerminusTTF-4.46.0.ttf", leading=24, tracking=2 ),
+        "custom": None
+    }
+
 
     def __init__(
         self,
@@ -105,6 +124,7 @@ class EnGlyphText(EnGlyph):
 
     def marking( self, renderable ):
         if self._markup:
+            #raise AttributeError( Text.from_markup(renderable) )
             return Text.from_markup(renderable)
         else:
             return Text(renderable)

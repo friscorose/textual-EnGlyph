@@ -14,8 +14,9 @@ class Test(App):
     }
     #T {
         background: white 20%;
+        padding: 1;
         position: relative;
-        offset: 34 -1;
+        offset: 34 -3;
     }
     """
 

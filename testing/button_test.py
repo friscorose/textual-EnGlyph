@@ -1,12 +1,11 @@
 from textual_englyph import EnGlyphText
-from textual import events, on
+from textual import on
 from textual.app import App, ComposeResult
 from textual.widgets import Button, Label
 from textual.containers import Horizontal, Vertical
 
 
 class Test(App):
-    fsize = 11
 
     def compose(self) -> ComposeResult:
         with Vertical():

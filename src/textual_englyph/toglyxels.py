@@ -71,7 +71,10 @@ class ToGlyxels:
     @staticmethod
     def image2slate(image, basis=(2, 4), pips=False):
         """A fast method to convert a PIL image into a slate (list of strips)"""
-        _, _, x_size, y_size = image.getbbox()
+        #raise AttributeError( bbox_size )
+        #raise AttributeError( image.getbbox() )
+        x_size, y_size = image.size
+        #_, _, x_size, y_size = image.getbbox() 
         dx, dy = basis
         glut = ToGlyxels.pips_glut if pips else ToGlyxels.full_glut
         slate = []

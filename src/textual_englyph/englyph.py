@@ -1,7 +1,6 @@
 """Create large text output module for Textual with custom widget EnGlyph"""
 from rich.console import RenderableType
 
-from rich.text import Text
 from textual.strip import Strip
 from textual.widget import Widget
 
@@ -96,6 +95,8 @@ class EnGlyph(Widget, inherit_bindings=False):
 
     def __str__(self) -> str:
         output = self._predicate
+        if not isinstance( output, str ):
+            output = "Image Instance"
         if self._slate != EnPipe().blank:
             output = "\n".join( [strip.text for strip in self._slate] )
         return output
