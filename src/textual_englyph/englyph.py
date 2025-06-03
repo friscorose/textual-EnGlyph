@@ -19,13 +19,6 @@ class EnPipe():
     def __iter__(self):
         return self
 
-    def __next__(self):
-        '''return the next slate in the pipeline'''
-        if self.aperiodic:
-            self.slates[ self.index ] = self.blank
-        self.index = (self.index+1)%len(self.slates)
-        return self.this()
-
     def __setitem__(self, key:int|float, value):
         '''enable slice/index assignment'''
         self.slates[ int(key) ] = value
@@ -34,8 +27,16 @@ class EnPipe():
         '''enable slice/index access'''
         return self.slates[ int(key)%len(self.slates) ]
 
+    def step(self, delta:int = 1 ):
+        '''return the next slate in the pipeline'''
+        if self.aperiodic:
+            self.slates[ self.index ] = self.blank
+        self.index = (self.index + delta)%len(self.slates)
+        return self.this()
+
     def append(self, value):
-        self.slates[ len(self.slates) ] = value
+        if value is not None:
+            self.slates[ len(self.slates) ] = value
 
     def this(self, value=None ):
         '''Optionally change and return the current slate in the pipeline'''

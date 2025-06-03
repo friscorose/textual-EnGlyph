@@ -16,18 +16,24 @@ from rich.traceback import install
 install()
 # raise ValueError("My message")
 
-def EnLoad( maybe_path ):
+def EnLoad( maybe_paths ):
     """
     A function to load file data into memory from a path and return that refernce.
     """
     import io
 
-    if isinstance(maybe_path, str):
-        with open(maybe_path, "rb") as fh:
+    def make_buff( path:str ):
+        with open(path, "rb") as fh:
             im_data = fh.read()
             im_buff = io.BytesIO(im_data)
-            maybe_path = Image.open(im_buff)
-    return maybe_path
+            return Image.open(im_buff)
+
+    if isinstance(maybe_paths, str):
+        maybe_paths = make_buff( maybe_paths )
+    elif isinstance(maybe_paths, list):
+        maybe_paths = [ make_buff(im_path) for im_path in maybe_paths ]
+
+    return maybe_paths
 
 class ToGlyxels:
     """Glyph pixels to enable user specified font based string rendering via PIL"""
@@ -71,7 +77,8 @@ class ToGlyxels:
     @staticmethod
     def image2slate(image, basis=(2, 4), pips=False):
         """A fast method to convert a PIL image into a slate (list of strips)"""
-        #raise AttributeError( bbox_size )
+        if image is None:
+            return None
         #raise AttributeError( image.getbbox() )
         x_size, y_size = image.size
         #_, _, x_size, y_size = image.getbbox() 

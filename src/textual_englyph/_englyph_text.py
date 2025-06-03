@@ -56,6 +56,7 @@ class EnGlyphText(EnGlyph):
         "xxx-large": SlugSet( basis=(2,4), points=20, font="TerminusTTF-4.46.0.ttf", leading=24, tracking=2 ),
         "custom": None
     }
+    #print( re.split( r"(:\S*?:)", "How :smile: do :big wink: you do?" ) )
 
 
     def __init__(
