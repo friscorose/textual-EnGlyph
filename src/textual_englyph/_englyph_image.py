@@ -33,6 +33,10 @@ class EnGlyphImage(EnGlyph):
         self._repeats_n = repeat
         super().__init__(*args, **kwargs)
 
+    def pipeline_show(self, index:int = 1 ) -> None:
+        self._slate_pipe.show( index )
+        self.refresh(layout=True)
+
     def pipeline_advance(self, frames:int = 1 ) -> None:
         _ = self._slate_pipe.step( frames )
         self.refresh(layout=True)

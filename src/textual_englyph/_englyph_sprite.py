@@ -12,5 +12,5 @@ class EnGlyphSprite( EnGlyphImage ):
         self.pipeline_advance( 1 )
 
     def show_frame( self, index ):
-        self.pipeline_advance( 0 )
+        self.pipeline_show( index )
 

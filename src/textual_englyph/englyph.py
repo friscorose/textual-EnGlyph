@@ -34,6 +34,10 @@ class EnPipe():
         self.index = (self.index + delta)%len(self.slates)
         return self.this()
 
+    def show(self, index:int):
+        self.index = index%len(self.slates)
+        return self.this()
+
     def append(self, value):
         if value is not None:
             self.slates[ len(self.slates) ] = value
