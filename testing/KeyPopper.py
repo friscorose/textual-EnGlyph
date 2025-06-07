@@ -39,7 +39,7 @@ class Test(App):
             self.bubble.remove()
         except:
             pass
-        self.bubble = EnGlyphText(event.key, classes="bubble", text_size="large") 
+        self.bubble = EnGlyphText(event.key, classes="bubble", text_size="large", basis=(2,3) ) 
         self.query_one("#I").next_frame()
         self.app.mount( self.bubble )
         self.set_timer( 2.33, self.bubble.remove )
