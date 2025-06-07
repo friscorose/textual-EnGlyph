@@ -28,7 +28,7 @@ class Test(App):
 
     kcats = ["cats/cat_idle_keyboard.png","cats/cat_right_paw_keyboard.png",
              "cats/cat_idle_keyboard.png","cats/cat_left_paw_keyboard.png"]
-    BongoCatKeys = EnGlyphSprite(kcats, id="I")
+    BongoCatKeys = EnGlyphSprite(kcats, id="I", basis=(2,3))
 
     def compose(self) -> ComposeResult:
         yield self.BongoCatKeys
