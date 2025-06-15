@@ -72,8 +72,10 @@ class EnGlyph(Widget, inherit_bindings=False):
     }
     """
 
+    dragging = False
 
     def __init__(self, renderable, *args, **kwargs):
+        self._maybe_default( 'draggable', False, kwargs=kwargs )
         self._maybe_default( 'slate_pipe', EnPipe(), kwargs=kwargs )
         self._maybe_default( 'basis', (2,4), kwargs=kwargs )
         self._maybe_default( 'pips', False, kwargs=kwargs )
@@ -97,6 +99,20 @@ class EnGlyph(Widget, inherit_bindings=False):
     def get_content_height(self, container=None, viewport=None, width=None):
         return len(self._slate)
 
+    def on_mouse_move(self, event):
+        if self._draggable and self.dragging:
+            self.offset = self.offset + event.delta
+
+    def on_mouse_up(self):
+        if self._draggable:
+            """clean up mouse handling"""
+            self.dragging = False
+            self.release_mouse()
+
+    def on_mouse_down(self):
+        if self._draggable:
+            self.dragging = True
+            self.capture_mouse()
 
     def __str__(self) -> str:
         output = self._predicate
