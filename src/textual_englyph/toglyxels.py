@@ -42,12 +42,25 @@ class ToGlyxels:
     def font_pane(phrase, font_name, font_size):
         font_asset = resources.files().joinpath("assets", font_name)
         if not font_asset.is_file():
-            raise AttributeError( font_asset )
-        font = ImageFont.truetype(font_asset, size=font_size)
-        _, _, r, b = font.getbbox(phrase)
-        # raise AttributeError( r, b )
-        mask = list(font.getmask(phrase, mode="1"))
-        return (r, b, mask)
+            raise FileNotFoundError(f'Font asset "{font_asset}" not found')
+        try:
+            font = ImageFont.truetype(font_asset, size=font_size)
+        except OSError:
+            raise ValueError(f'Font "{font_name}" is not supported with {font_size} font_size. Please use another font or smaller font size.')
+
+        mask_core = font.getmask(phrase, mode="1") # PIL.ImagingCore
+        w, h = mask_core.size
+        mask = list(mask_core)
+
+        if w == 0 or h == 0:
+            return (0, 0, [])  # empty line/glyph
+
+        if len(mask) != w * h:
+            raise ValueError(
+                f"Glyph mask size mismatch: len(mask)={len(mask)} != {w}*{h}."
+            )
+
+        return (w, h, mask)
 
     # full infill glyxel(glyph pixel) look up table, columns x rows
     full_glut = [[], ["", "", ""], ["", "", "", "", ""]]
@@ -137,6 +150,14 @@ class ToGlyxels:
             return [Strip.blank(0)]
 
         glut = ToGlyxels.pips_glut if pips else ToGlyxels.full_glut
+        if basis[0] > len(glut) - 1:
+            raise ValueError(f'Basis 0 must be less than {len(glut)}')
+        if basis[1] > len(glut[basis[0]]) - 1:
+            raise ValueError(f'Basis 1 must be less than {len(glut[basis[0]])}')
+        if basis[0] < 1:
+            raise ValueError('Basis 0 must be greater than 0')
+        if basis[1] < 2: # basis=(..., 1) not working, so min value is 2
+            raise ValueError('Basis 1 must be greater than 1')
 
         selection = Image.new("1", (x, y))
         selection.putdata(mask)

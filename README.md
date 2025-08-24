@@ -1,49 +1,89 @@
 # Textual-EnGlyph
-A large font and image rendering widget for the Textual platform.
 
-# Requirements
-For this to look good you will need a terminal emulator that supports Unicode and a font
-that has glyphs for the Symbols for Legacy Computing block defined by Unicode version 16.0. 
+*A large font and image rendering widget for [Textual](https://textual.textualize.io/).*
 
-## Known terminals
- - iTerm2 (OS X)
- - xfce4-Terminal (Linux)
- - Terminal (Windows)
- - ...and many more.
+[![PyPI version](https://img.shields.io/pypi/v/textual-englyph)](https://pypi.org/project/textual-englyph/) [![License](https://img.shields.io/pypi/l/textual-englyph)](./LICENSE) ![Textual](https://img.shields.io/badge/powered%20by-Textual-purple)
 
-## Known terminal fonts
- - Cascadia Code https://github.com/microsoft/cascadia-code/, v 2404.3 or later
- - GNU Unifont http://savannah.gnu.org/projects/unifont/, v 16.0 or later 
- - Iosevka https://typeof.net/Iosevka/, v 13.9.1 or later
+![Screenshot](./screenshot.png)
 
-# Howto
-This widget library is available as a python PyPi library. 
+---
 
-This HowTo recommends `uv` to manage your python environment,
-see https://docs.astral.sh/uv/guides/ for using `uv`.
+## ✨ Features
 
-Install and import the text widget
+* Render **large text** with scalable bitmap/outline fonts in the terminal
+* Support for **Unicode Symbols for Legacy Computing** block (Unicode 16.0)
+* Compatible with **Textual** widgets/layouts
+* Easy integration with `text_size`, `font_name`, `font_size` parameters
+* Works cross-platform (Linux / macOS / Windows terminals that support Unicode)
+
+---
+
+## 📦 Installation
+
+Using [`uv`](https://docs.astral.sh/uv/guides/) (recommended):
+
 ```bash
 uv pip install textual-englyph
 ```
-Use as a module in your textual python app. Save the following simple example as `text.py`
+
+Or classic `pip`:
+
+```bash
+pip install textual-englyph
+```
+
+---
+
+## 🚀 Quick Start
+
+Create a file `text.py`:
+
 ```python
 from textual.app import App, ComposeResult
 from textual_englyph import EnGlyphText
 
 
-class Test(App):
-    """Test console markup styling the englyph text use case"""
-
+class Demo(App):
     def compose(self) -> ComposeResult:
-        yield EnGlyphText("From Englyph, Hello [violet]Textual!", text_size="small")
+        yield EnGlyphText(
+            "From EnGlyph, Hello [violet]Textual!",
+            text_size="medium"
+        )
 
 if __name__ == "__main__":
-    Test().run()
+    Demo().run()
 ```
-and run it (use ctrl-q to exit)
+
+Run:
+
 ```bash
 uv run text.py
 ```
 
-See Overview.md for more information regarding EnGlyph capabilities.
+---
+
+## 🖥️ Requirements
+
+To see EnGlyph text correctly, you need:
+
+* A terminal emulator that supports Unicode symbols (>= v16.0)
+* A font with glyphs for the **Symbols for Legacy Computing** block
+
+### Known Terminals
+
+* iTerm2 (macOS)
+* xfce4-Terminal (Linux)
+* Windows Terminal
+* …and many more
+
+### Known Fonts
+
+* [Cascadia Code](https://github.com/microsoft/cascadia-code/) v2404.3+
+* [GNU Unifont](http://savannah.gnu.org/projects/unifont/) v16.0+
+* [Iosevka](https://typeof.net/Iosevka/) v13.9.1+
+
+---
+
+## 📖 More
+
+See [Overview.md](./Overview.md) for details about EnGlyph capabilities, font usage, and advanced options.

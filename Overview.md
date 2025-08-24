@@ -12,7 +12,7 @@ octant, sextant, quadrant and binant based pixels (glyxels).
 1) https://github.com/Textualize/textual
 2) https://github.com/Textualize/rich
 3) https://python-pillow.github.io/
-5) https://unicode.org/charts/nameslist/
+4) https://unicode.org/charts/nameslist/
 
 ## EnGlyphText based scalable text
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     Test().run()
 ```
 
-There are a few predefined sizes. The "x-xmall" size is the basline size of
+There are a few predefined sizes. The "x-small" size is the basline size of
 standard terminal text. From there the characters are built from glyphs of a
 cell partitioned into pixel like parts, called a glyxel in this document. The
 default cell glyxels are 2 columns by 4 rows, but other partitions are
