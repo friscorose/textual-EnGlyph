@@ -139,7 +139,8 @@ class EnGlyphText(EnGlyph):
         else:
             for strip in slate:
                 for seg in strip:
-                    pane = ToGlyxels.font_pane( seg.text, self._font_name, self._font_size)
+                    #fallback: if only basis and font_size set, use TerminusTTF instead empty font size.
+                    pane = ToGlyxels.font_pane( seg.text, self._font_name or 'TerminusTTF-4.46.0.ttf', self._font_size)
                     slate = ToGlyxels.pane2slate(pane, seg.style, self._basis, self._pips)
                     slate_buf = ToGlyxels.slate_join(slate_buf, slate)
         return slate_buf
