@@ -21,7 +21,7 @@ class Test(App):
     """
 
     def compose(self) -> ComposeResult:
-        yield EnGlyphImage("testing/hopper.jpg", id="I")
+        yield EnGlyphImage("testing/hopper.jpg", id="I", basis=(2,4) )
         yield EnGlyphText("'Grace' hopper.jpg", id="T")
         #yield EnGlyphImage( "testing/twirl.gif", id="I" )
         #yield EnGlyphText( " Coup de Grâce ", id="T", text_size="medium" )

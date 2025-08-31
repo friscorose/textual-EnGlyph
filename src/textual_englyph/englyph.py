@@ -4,6 +4,8 @@ from rich.console import RenderableType
 from textual.strip import Strip
 from textual.widget import Widget
 
+class PaneManagement():
+    pass
 
 class EnPipe():
     """ A data structure for managing a slate(list'o'strips) sequence"""
@@ -73,6 +75,10 @@ class EnGlyph(Widget, inherit_bindings=False):
     """
 
     dragging = False
+    #The pane prescription upon which subscribed entities are projected when in view
+    view_pane = PaneManagement()
+    #The bounding box in glyxels for this englyphed image
+    pane_points = (0,0,0,0)
 
     def __init__(self, renderable, *args, **kwargs):
         self._maybe_default( 'draggable', False, kwargs=kwargs )
